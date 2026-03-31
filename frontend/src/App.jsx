@@ -731,7 +731,7 @@ function Login() {
     setLoading(true)
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: form.email,
           password: form.password,
         })
@@ -739,6 +739,22 @@ function Login() {
           setErrors({ form: error.message })
           setLoading(false)
           return
+        }
+        // Sync profile on login (catches cases where signup profile save failed)
+        if (data.user) {
+          try {
+            await fetch('/api/save-profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: data.user.id,
+                fullName: data.user.user_metadata?.full_name || '',
+                email: data.user.email,
+              }),
+            })
+          } catch (e) {
+            // Non-blocking - login still succeeds even if profile sync fails
+          }
         }
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -753,17 +769,24 @@ function Login() {
           setLoading(false)
           return
         }
-        // Save profile data to the profiles table
+        // Save profile data via server-side function (bypasses RLS)
         if (data.user) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: data.user.id,
-              full_name: form.name,
-              email: form.email,
+          try {
+            const res = await fetch('/api/save-profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: data.user.id,
+                fullName: form.name,
+                email: form.email,
+              }),
             })
-          if (profileError) {
-            console.error('Profile save error:', profileError.message)
+            if (!res.ok) {
+              const err = await res.json()
+              console.error('Profile save error:', err.error)
+            }
+          } catch (e) {
+            console.error('Profile save error:', e.message)
           }
         }
       }
