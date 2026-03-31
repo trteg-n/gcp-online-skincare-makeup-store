@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom'
 import './App.css'
-import { db } from './supabase.js'
 
 const PRODUCTS = [
   { id:1,  name:'Vitamin C Brightening Serum',    category:'Serum',        price:38, images:['/images/serum-1.jpg','/images/serum-2.jpg','/images/serum-3.jpg'], skin:['Dull','Uneven Tone'],badge:'Best Seller', desc:'A stable 15% Vitamin C serum targeting hyperpigmentation and dullness. Enhanced with ferulic acid for extended potency.', ingredients:'Aqua, Ascorbic Acid 15%, Propanediol, Glycerin, Ferulic Acid, Tocopherol, Sodium Hyaluronate' },
@@ -29,22 +28,6 @@ const PRODUCTS = [
 ]
 
 const CATEGORIES = ['All','Serum','Moisturiser','Foundation','SPF','Eye Care','Toner','Treatment','Lip Care','Cleanser','Makeup']
-
-const [cart, setCart] = useState([])
-const [userId, setUserId] = useState(null)
-const cartCount = cart.reduce((sum, item) => sum + 1, 0)
-useEffect(() => {
-  db.auth.getSession().then(({ data: { session } }) => {
-    if (session) setUserId(session.user.id)
-  })
-
-  const { data: listener } = db.auth.onAuthStateChange((_event, session) => {
-    setUserId(session?.user?.id || null)
-  })
-
-  return () => listener.subscription.unsubscribe()
-}, [])
-
 
 function Nav({ cartCount }) {
   const navigate = useNavigate()
@@ -444,14 +427,12 @@ function Cart({ cart, onRemove }) {
   )
 }
 
-
-function Checkout({ cart, onClearCart,user_id}) {
+function Checkout({ cart, onClearCart }) {
   const navigate = useNavigate()
   const [form, setForm] = useState({ name:'', email:'', address:'', city:'', postcode:'', card:'', expiry:'', cvv:'' })
   const [errors, setErrors] = useState({})
   const [placed, setPlaced] = useState(false)
   const total = cart.reduce((sum, item) => sum + item.price, 0)
-  const [loading, setLoading] = useState(false)
 
   function validate() {
     const e = {}
@@ -465,59 +446,15 @@ function Checkout({ cart, onClearCart,user_id}) {
     if (form.cvv.length < 3) e.cvv = 'Enter a valid CVV'
     return e
   }
-  async function handlePlace() {
-  const e = validate()
-  setErrors(e)
-  if (Object.keys(e).length !== 0) return
-  setLoading(true)
 
-  const total = cart.reduce((sum, item) => sum + item.price, 0)
-  const deliveryCost = total >= 40 ? 0 : 3.99
-  const finalTotal = total + deliveryCost
-
-  // 1 — Save order
-  const { data: orderData, error: orderError } = await db
-    .from('orders').insert({
-      user_id: userId || null,
-      total: finalTotal,
-      subtotal_total: total,
-      status: 'confirmed',
-      address: `${form.address}, ${form.city}, ${form.postcode}`,
-      phone_number: null,
-      created_at: new Date().toISOString()
-    }).select().single()
-
-  if (orderError) {
-    setLoading(false)
-    alert('Order failed: ' + orderError.message)
-    return
+  function handlePlace() {
+    const e = validate()
+    setErrors(e)
+    if (Object.keys(e).length === 0) {
+      setPlaced(true)
+      onClearCart()
+    }
   }
-
-  // 2 — Save order items
-  const orderItems = cart.map(item => ({
-    orders_id: orderData.order_id,
-    product_id: item.id,
-    quantity: 1,
-    unit_price: item.price
-  }))
-  await db.from('order_items').insert(orderItems)
-
-  // 3 — Save address if logged in
-  if (userId) {
-    await db.from('addresses').insert({
-      user_id: userId,
-      address_text: form.address,
-      city: form.city,
-      state: '',
-      postal_code: form.postcode,
-      country: 'UK'
-    })
-  }
-
-  setLoading(false)
-  setPlaced(true)
-  onClearCart()
-}
 
   function field(label, key, placeholder, type='text') {
     return (
@@ -774,8 +711,6 @@ function Login() {
   const [isLogin, setIsLogin] = useState(true)
   const [form, setForm] = useState({ name:'', email:'', password:'' })
   const [errors, setErrors] = useState({})
-  const [authError, setAuthError] = useState('')
-  const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
   function validate() {
@@ -786,52 +721,10 @@ function Login() {
     return e
   }
 
-  async function handleSubmit() {
+  function handleSubmit() {
     const e = validate()
     setErrors(e)
-    setAuthError('')
-    if (Object.keys(e).length !== 0) return
-    setLoading(true)
-
-    if (isLogin) {
-      // ── SIGN IN ──
-      const { data, error } = await db.auth.signInWithPassword({
-        email: form.email,
-        password: form.password
-      })
-      if (error) {
-        setAuthError(error.message)
-        // Log failed login attempt
-        await db.from('failed_logins').insert({ email: form.email })
-      } else {
-        setSubmitted(true)
-      }
-
-    } else {
-      // ── REGISTER ──
-      const { data, error } = await db.auth.signUp({
-        email: form.email,
-        password: form.password
-      })
-      if (error) {
-        setAuthError(error.message)
-      } else {
-        // Save to public.users table
-        const { error: profileError } = await db.from('users').insert({
-          user_id: data.user.id,
-          email: form.email,
-          username: form.name,
-          password_hash: 'SUPABASE_AUTH',
-          created_at: new Date().toISOString()
-        })
-        if (profileError) {
-          setAuthError('Profile save failed: ' + profileError.message)
-        } else {
-          setSubmitted(true)
-        }
-      }
-    }
-    setLoading(false)
+    if (Object.keys(e).length === 0) setSubmitted(true)
   }
 
   if (submitted) return (
@@ -839,12 +732,8 @@ function Login() {
       <div style={{width:64,height:64,borderRadius:'50%',background:'var(--peach-light)',display:'flex',alignItems:'center',justifyContent:'center'}}>
         <svg width="28" height="28" fill="none" stroke="var(--peach)" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:36,fontWeight:300}}>
-        {isLogin ? 'Welcome back.' : 'Account created.'}
-      </h2>
-      <p style={{color:'var(--muted)'}}>
-        {isLogin ? 'You are now signed in.' : 'Check your email to confirm your account.'}
-      </p>
+      <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:36,fontWeight:300}}>{isLogin ? 'Welcome back.' : 'Account created.'}</h2>
+      <p style={{color:'var(--muted)'}}>You are now signed in to Formula Me.</p>
       <button className="btn-primary" onClick={() => navigate('/')}>Go to Home</button>
     </div>
   )
@@ -858,52 +747,33 @@ function Login() {
         <p style={{color:'var(--muted)',fontSize:13,textAlign:'center',marginBottom:32}}>
           {isLogin ? 'Sign in to your Formula Me account' : 'Join Formula Me today'}
         </p>
-
         <div style={{display:'flex',marginBottom:28,border:'1px solid var(--border)',borderRadius:8,overflow:'hidden'}}>
-          <button onClick={() => { setIsLogin(true); setAuthError('') }}
-            style={{flex:1,padding:'10px',border:'none',background:isLogin?'var(--peach-light)':'transparent',color:isLogin?'var(--charcoal)':'var(--muted)',fontWeight:isLogin?500:400,cursor:'pointer',fontFamily:'inherit',fontSize:13}}>
-            Sign In
-          </button>
-          <button onClick={() => { setIsLogin(false); setAuthError('') }}
-            style={{flex:1,padding:'10px',border:'none',background:!isLogin?'var(--peach-light)':'transparent',color:!isLogin?'var(--charcoal)':'var(--muted)',fontWeight:!isLogin?500:400,cursor:'pointer',fontFamily:'inherit',fontSize:13}}>
-            Register
-          </button>
+          <button onClick={() => setIsLogin(true)} style={{flex:1,padding:'10px',border:'none',background:isLogin?'var(--peach-light)':'transparent',color:isLogin?'var(--charcoal)':'var(--muted)',fontWeight:isLogin?500:400,cursor:'pointer',fontFamily:'inherit',fontSize:13}}>Sign In</button>
+          <button onClick={() => setIsLogin(false)} style={{flex:1,padding:'10px',border:'none',background:!isLogin?'var(--peach-light)':'transparent',color:!isLogin?'var(--charcoal)':'var(--muted)',fontWeight:!isLogin?500:400,cursor:'pointer',fontFamily:'inherit',fontSize:13}}>Register</button>
         </div>
-
-        {authError && (
-          <div style={{background:'#FEF2F2',border:'1px solid #FECACA',borderRadius:8,padding:'10px 14px',marginBottom:16,fontSize:12,color:'#DC2626'}}>
-            {authError}
-          </div>
-        )}
-
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
           {!isLogin && (
             <div>
               <label style={{fontSize:12,color:'var(--muted)',display:'block',marginBottom:6}}>Full Name</label>
-              <input value={form.name} onChange={e => setForm({...form,name:e.target.value})}
-                placeholder="Your name"
+              <input value={form.name} onChange={e => setForm({...form,name:e.target.value})} placeholder="Your name"
                 style={{width:'100%',padding:'12px 16px',border:`1.5px solid ${errors.name?'#F87171':'var(--border)'}`,borderRadius:8,fontSize:13,fontFamily:'inherit',outline:'none',background:'var(--coconut)'}}/>
               {errors.name && <p style={{color:'#EF4444',fontSize:11,marginTop:4}}>{errors.name}</p>}
             </div>
           )}
           <div>
             <label style={{fontSize:12,color:'var(--muted)',display:'block',marginBottom:6}}>Email Address</label>
-            <input type="email" value={form.email} onChange={e => setForm({...form,email:e.target.value})}
-              placeholder="you@email.com"
+            <input type="email" value={form.email} onChange={e => setForm({...form,email:e.target.value})} placeholder="you@email.com"
               style={{width:'100%',padding:'12px 16px',border:`1.5px solid ${errors.email?'#F87171':'var(--border)'}`,borderRadius:8,fontSize:13,fontFamily:'inherit',outline:'none',background:'var(--coconut)'}}/>
             {errors.email && <p style={{color:'#EF4444',fontSize:11,marginTop:4}}>{errors.email}</p>}
           </div>
           <div>
             <label style={{fontSize:12,color:'var(--muted)',display:'block',marginBottom:6}}>Password</label>
-            <input type="password" value={form.password} onChange={e => setForm({...form,password:e.target.value})}
-              placeholder="Min. 8 characters"
+            <input type="password" value={form.password} onChange={e => setForm({...form,password:e.target.value})} placeholder="Min. 8 characters"
               style={{width:'100%',padding:'12px 16px',border:`1.5px solid ${errors.password?'#F87171':'var(--border)'}`,borderRadius:8,fontSize:13,fontFamily:'inherit',outline:'none',background:'var(--coconut)'}}/>
             {errors.password && <p style={{color:'#EF4444',fontSize:11,marginTop:4}}>{errors.password}</p>}
           </div>
-          <button className="btn-primary"
-            style={{width:'100%',justifyContent:'center',marginTop:8,opacity:loading?0.7:1}}
-            onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
+          <button className="btn-primary" style={{width:'100%',justifyContent:'center',marginTop:8}} onClick={handleSubmit}>
+            {isLogin ? 'Sign In' : 'Create Account'}
           </button>
         </div>
       </div>
@@ -914,82 +784,24 @@ function Login() {
 export default function App() {
   const [cart, setCart] = useState([])
   const [toast, setToast] = useState(null)
-  const [userId, setUserId] = useState(null)
 
-  // ── Track logged-in user ──
-  useEffect(() => {
-    db.auth.getSession().then(({ data: { session } }) => {
-      setUserId(session?.user?.id || null)
-    })
-    db.auth.onAuthStateChange((_e, session) => {
-      setUserId(session?.user?.id || null)
-    })
-  }, [])
-
-  // ── Add to cart ──
-  async function addToCart(product) {
+  function addToCart(product) {
     setCart(c => [...c, product])
     setToast(`${product.name} added to cart`)
     setTimeout(() => setToast(null), 2500)
-
-    if (userId) {
-      // Get or create cart for user
-      let { data: cartData } = await db
-        .from('cart').select('cart_id')
-        .eq('user_id', userId).single()
-
-      if (!cartData) {
-        const { data: newCart } = await db
-          .from('cart').insert({ user_id: userId })
-          .select().single()
-        cartData = newCart
-      }
-
-      // Add to cart_item
-      const { data: existing } = await db
-        .from('cart_item')
-        .select('cart_item_id, quantity')
-        .eq('cart_id', cartData.cart_id)
-        .eq('product_id', product.id)
-        .single()
-
-      if (existing) {
-        await db.from('cart_item')
-          .update({ quantity: existing.quantity + 1 })
-          .eq('cart_item_id', existing.cart_item_id)
-      } else {
-        await db.from('cart_item').insert({
-          cart_id: cartData.cart_id,
-          product_id: product.id,
-          quantity: 1
-        })
-      }
-    }
   }
 
-  // ── Remove from cart ──
-  async function removeFromCart(productId) {
+  function removeFromCart(productId) {
     setCart(c => {
       const idx = c.findLastIndex(p => p.id === productId)
       if (idx === -1) return c
       return [...c.slice(0, idx), ...c.slice(idx + 1)]
     })
-
-    if (userId) {
-      const { data: cartData } = await db
-        .from('cart').select('cart_id')
-        .eq('user_id', userId).single()
-
-      if (cartData) {
-        await db.from('cart_item')
-          .delete()
-          .eq('cart_id', cartData.cart_id)
-          .eq('product_id', productId)
-      }
-    }
   }
 
-  function clearCart() { setCart([]) }
+  function clearCart() {
+    setCart([])
+  }
 
   return (
     <BrowserRouter>
@@ -1002,8 +814,7 @@ export default function App() {
         <Route path="/about" element={<About/>}/>
         <Route path="/login" element={<Login/>}/>
         <Route path="/cart" element={<Cart cart={cart} onRemove={removeFromCart}/>}/>
-        <Route path="/checkout" element={<Checkout cart={cart} onClearCart={clearCart} userId={userId}/>}/>
-        <Route path="/profile" element={<Profile userId={userId}/>}/>
+        <Route path="/checkout" element={<Checkout cart={cart} onClearCart={clearCart}/>}/>
       </Routes>
       {toast && <div className="toast">{toast}</div>}
     </BrowserRouter>
