@@ -30,22 +30,6 @@ const PRODUCTS = [
 
 const CATEGORIES = ['All','Serum','Moisturiser','Foundation','SPF','Eye Care','Toner','Treatment','Lip Care','Cleanser','Makeup']
 
-const [cart, setCart] = useState([])
-const [userId, setUserId] = useState(null)
-const cartCount = cart.reduce((sum, item) => sum + 1, 0)
-useEffect(() => {
-  db.auth.getSession().then(({ data: { session } }) => {
-    if (session) setUserId(session.user.id)
-  })
-
-  const { data: listener } = db.auth.onAuthStateChange((_event, session) => {
-    setUserId(session?.user?.id || null)
-  })
-
-  return () => listener.subscription.unsubscribe()
-}, [])
-
-
 function Nav({ cartCount }) {
   const navigate = useNavigate()
   return (
@@ -445,7 +429,7 @@ function Cart({ cart, onRemove }) {
 }
 
 
-function Checkout({ cart, onClearCart,user_id}) {
+function Checkout({ cart, onClearCart, userId }) {
   const navigate = useNavigate()
   const [form, setForm] = useState({ name:'', email:'', address:'', city:'', postcode:'', card:'', expiry:'', cvv:'' })
   const [errors, setErrors] = useState({})
@@ -907,6 +891,66 @@ function Login() {
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+function Profile({ userId }) {
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      const { data: { session } } = await db.auth.getSession()
+      if (!session) {
+        navigate('/login')
+        return
+      }
+      const { data } = await db
+        .from('users')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single()
+      setUser(data || { email: session.user.email })
+      setLoading(false)
+    }
+    load()
+  }, [userId, navigate])
+
+  async function handleSignOut() {
+    await db.auth.signOut()
+    navigate('/')
+  }
+
+  if (loading) return (
+    <div style={{minHeight:'80vh',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <p style={{color:'var(--muted)'}}>Loading...</p>
+    </div>
+  )
+
+  return (
+    <div style={{minHeight:'80vh'}}>
+      <div style={{padding:'20px 48px',borderBottom:'1px solid var(--border)'}}>
+        <span style={{fontSize:12,color:'var(--muted)'}}>Home / </span>
+        <span style={{fontSize:12,color:'var(--charcoal)'}}>My Account</span>
+      </div>
+      <div style={{maxWidth:600,margin:'0 auto',padding:'48px 24px'}}>
+        <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:40,fontWeight:300,marginBottom:32}}>My Account</h1>
+        <div style={{background:'var(--white)',border:'1px solid var(--border)',borderRadius:12,padding:32}}>
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--muted)',marginBottom:6}}>Name</div>
+            <div style={{fontSize:15,color:'var(--charcoal)'}}>{user?.username || '—'}</div>
+          </div>
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--muted)',marginBottom:6}}>Email</div>
+            <div style={{fontSize:15,color:'var(--charcoal)'}}>{user?.email || '—'}</div>
+          </div>
+          <div style={{height:1,background:'var(--border)',margin:'24px 0'}}/>
+          <button className="btn-primary" onClick={handleSignOut}>Sign Out</button>
+        </div>
+      </div>
+      <Footer/>
     </div>
   )
 }
