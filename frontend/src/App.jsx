@@ -46,7 +46,7 @@ useEffect(() => {
 }, [])
 
 
-function Nav({ cartCount }) {
+function Nav({ cartCount, userId }) {
   const navigate = useNavigate()
   return (
     <nav className="nav">
@@ -58,7 +58,7 @@ function Nav({ cartCount }) {
         <Link to="/about">About</Link>
       </div>
       <div className="nav-icons">
-        <button className="nav-icon" onClick={() => navigate('/login')} title="Account">
+        <button className="nav-icon" onClick={() => navigate(userID ? '/profile' : '/login')} title="Account">
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
         <button className="nav-icon cart-btn" onClick={() => navigate('/cart')} title="Cart">
@@ -603,82 +603,298 @@ function Checkout({ cart, onClearCart,user_id}) {
   )
 }
 
-function SkinQuiz() {
+function SkinQuiz({ userId }) {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState({})
   const [result, setResult] = useState(null)
+  const [saved, setSaved] = useState(false)
 
   const questions = [
-    { q:'How does your skin feel by midday?', options:['Oily all over','Dry and tight','Oily in T-zone only','Normal and balanced'] },
-    { q:'How sensitive is your skin?', options:['Very sensitive — reacts easily','Mildly sensitive','Not sensitive at all','I get breakouts often'] },
-    { q:'What is your main skin concern?', options:['Dullness and uneven tone','Dryness and dehydration','Breakouts and pores','Ageing and fine lines'] },
-    { q:'Do you currently use SPF daily?', options:['Yes, every morning','Sometimes','Rarely','Never'] },
+    {
+      q: 'How does your skin feel by midday?',
+      key: 'midday',
+      options: [
+        { text: 'Oily and shiny all over',         scores: { oily: 3 } },
+        { text: 'Dry, tight or flaky',              scores: { dry: 3 } },
+        { text: 'Oily in T-zone, dry on cheeks',   scores: { combination: 3 } },
+        { text: 'Normal and comfortable',           scores: { normal: 3 } },
+      ]
+    },
+    {
+      q: 'How does your skin feel right after cleansing?',
+      key: 'post_cleanse',
+      options: [
+        { text: 'Very tight and dry',               scores: { dry: 3, sensitive: 1 } },
+        { text: 'Still slightly oily',              scores: { oily: 3 } },
+        { text: 'Comfortable and balanced',         scores: { normal: 3 } },
+        { text: 'Dry on cheeks, fine elsewhere',    scores: { combination: 3 } },
+      ]
+    },
+    {
+      q: 'How visible are your pores?',
+      key: 'pores',
+      options: [
+        { text: 'Very visible across my whole face',  scores: { oily: 3 } },
+        { text: 'Visible mainly on nose and forehead',scores: { combination: 3 } },
+        { text: 'Barely visible',                     scores: { dry: 2, normal: 1 } },
+        { text: 'Not visible at all',                 scores: { normal: 2, dry: 1 } },
+      ]
+    },
+    {
+      q: 'How often do you experience breakouts?',
+      key: 'breakouts',
+      options: [
+        { text: 'Frequently — multiple times a month', scores: { oily: 2, acne: 3 } },
+        { text: 'Occasionally around my T-zone',       scores: { combination: 2, acne: 1 } },
+        { text: 'Rarely, usually hormonal',            scores: { normal: 2 } },
+        { text: 'Almost never',                        scores: { dry: 1, normal: 1 } },
+      ]
+    },
+    {
+      q: 'How does your skin react to new products?',
+      key: 'reactivity',
+      options: [
+        { text: 'Frequently reacts — redness or burning', scores: { sensitive: 3 } },
+        { text: 'Sometimes gets a little red',            scores: { sensitive: 2 } },
+        { text: 'Occasional breakouts only',              scores: { normal: 1, acne: 1 } },
+        { text: 'Rarely or never reacts',                 scores: { normal: 2 } },
+      ]
+    },
+    {
+      q: 'How would you describe your skin texture?',
+      key: 'texture',
+      options: [
+        { text: 'Rough, uneven or dull',              scores: { dry: 2, dullness: 2 } },
+        { text: 'Bumpy with clogged or enlarged pores',scores: { oily: 2, acne: 2 } },
+        { text: 'Smooth but occasional dry patches',   scores: { combination: 2 } },
+        { text: 'Generally smooth and even',           scores: { normal: 3 } },
+      ]
+    },
+    {
+      q: 'How does your skin behave in cold or dry weather?',
+      key: 'cold_weather',
+      options: [
+        { text: 'Very dry, flaky and uncomfortable',  scores: { dry: 3 } },
+        { text: 'Gets dry but manageable',            scores: { combination: 2, dry: 1 } },
+        { text: 'Becomes red and irritated',          scores: { sensitive: 3 } },
+        { text: 'Barely changes',                     scores: { oily: 2, normal: 1 } },
+      ]
+    },
+    {
+      q: 'Do you notice visible redness, flushing or irritation?',
+      key: 'redness',
+      options: [
+        { text: 'Yes, frequently and easily triggered', scores: { sensitive: 3 } },
+        { text: 'Occasionally, especially after washing',scores: { sensitive: 2 } },
+        { text: 'Rarely — only from specific products', scores: { normal: 2 } },
+        { text: 'Almost never',                         scores: { normal: 2, oily: 1 } },
+      ]
+    },
+    {
+      q: 'What signs of ageing are you noticing?',
+      key: 'ageing',
+      options: [
+        { text: 'Fine lines and loss of firmness',     scores: { mature: 3 } },
+        { text: 'Dark spots or uneven skin tone',      scores: { dullness: 3 } },
+        { text: 'Some dehydration lines',              scores: { dry: 2, mature: 1 } },
+        { text: 'None — this is not a concern yet',    scores: { normal: 1 } },
+      ]
+    },
+    {
+      q: 'What is your biggest skin concern right now?',
+      key: 'concern',
+      options: [
+        { text: 'Dullness and uneven skin tone',   scores: { dullness: 3 } },
+        { text: 'Breakouts and clogged pores',     scores: { acne: 3 } },
+        { text: 'Dryness and lack of hydration',   scores: { dry: 3 } },
+        { text: 'Fine lines and firmness',         scores: { mature: 3 } },
+      ]
+    },
   ]
 
-  function answer(opt) {
-    const newAnswers = { ...answers, [step]: opt }
+  function answer(option) {
+    const newAnswers = { ...answers, [step]: option.text }
     setAnswers(newAnswers)
+
+    // Accumulate scores
+    const allScores = {}
+    const allOptions = Object.values({ ...answers, [step]: option }).map((a, i) => {
+      if (typeof a === 'string') return null
+      return a
+    }).filter(Boolean)
+
+    // Build scores from all answers including current
+    const scoreMap = { oily: 0, dry: 0, combination: 0, normal: 0, sensitive: 0, mature: 0, acne: 0, dullness: 0 }
+
+    // Add previous answers' scores
+    Object.entries(answers).forEach(([stepIdx, optText]) => {
+      const q = questions[parseInt(stepIdx)]
+      const opt = q.options.find(o => o.text === optText)
+      if (opt) Object.entries(opt.scores).forEach(([k, v]) => { scoreMap[k] = (scoreMap[k] || 0) + v })
+    })
+    // Add current answer scores
+    Object.entries(option.scores).forEach(([k, v]) => { scoreMap[k] = (scoreMap[k] || 0) + v })
+
     if (step < questions.length - 1) {
-      setStep(s => s+1)
+      setStep(s => s + 1)
+      setAnswers(newAnswers)
     } else {
-      const concern = newAnswers[2]
-      const recs = {
-        'Dullness and uneven tone': PRODUCTS.filter(p => p.skin.includes('Dull') || p.skin.includes('Uneven Tone')).slice(0,3),
-        'Dryness and dehydration':  PRODUCTS.filter(p => p.skin.includes('Dry') || p.skin.includes('Dehydrated')).slice(0,3),
-        'Breakouts and pores':      PRODUCTS.filter(p => p.skin.includes('Acne-Prone') || p.skin.includes('Oily')).slice(0,3),
-        'Ageing and fine lines':    PRODUCTS.filter(p => p.skin.includes('Mature')).slice(0,3),
+      // Determine skin type
+      const skinTypes = ['oily', 'dry', 'combination', 'normal', 'sensitive']
+      const skinType = skinTypes.reduce((a, b) => scoreMap[a] >= scoreMap[b] ? a : b)
+
+      // Determine top 2 concerns
+      const concerns = ['acne', 'dullness', 'mature', 'sensitive', 'dry']
+        .sort((a, b) => (scoreMap[b] || 0) - (scoreMap[a] || 0))
+        .slice(0, 2)
+
+      // Map to product recommendations
+      const skinTagMap = {
+        oily:        ['Oily', 'Acne-Prone', 'Congested'],
+        dry:         ['Dry', 'Dehydrated', 'Sensitive'],
+        combination: ['Combination', 'Oily', 'Dull'],
+        normal:      ['All Types', 'Normal'],
+        sensitive:   ['Sensitive', 'Rosacea'],
       }
-      setResult(recs[concern] || PRODUCTS.slice(0,3))
+      const concernTagMap = {
+        acne:     ['Acne-Prone', 'Congested', 'Oily'],
+        dullness: ['Dull', 'Uneven Tone'],
+        mature:   ['Mature', 'Uneven Tone'],
+        dry:      ['Dry', 'Dehydrated'],
+        sensitive:['Sensitive', 'Rosacea'],
+      }
+
+      const tags = [
+        ...(skinTagMap[skinType] || []),
+        ...(concerns.flatMap(c => concernTagMap[c] || []))
+      ]
+
+      const recs = PRODUCTS
+        .filter(p => p.skin.some(s => tags.includes(s)))
+        .slice(0, 6)
+
+      const finalResult = { skinType, concerns, recs, scores: scoreMap }
+      setResult(finalResult)
+      setAnswers(newAnswers)
+
+      // Save to Supabase if logged in
+      if (userId) {
+        saveProfile(finalResult, newAnswers)
+      }
     }
   }
 
+  async function saveProfile(finalResult, allAnswers) {
+    await db.from('skin_profile').upsert({
+      user_id: userId,
+      skin_type: finalResult.skinType,
+      concerns: finalResult.concerns,
+      quiz_answers: allAnswers,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' })
+    setSaved(true)
+  }
+
+  const skinTypeInfo = {
+    oily:        { label: 'Oily Skin',         emoji: '✨', desc: 'Your skin produces excess sebum, leading to shine and enlarged pores. Focus on balancing and non-comedogenic formulas.' },
+    dry:         { label: 'Dry Skin',           emoji: '🌿', desc: 'Your skin lacks moisture and natural oils. Focus on rich hydration, barrier repair and gentle cleansing.' },
+    combination: { label: 'Combination Skin',   emoji: '⚖️', desc: 'You have an oily T-zone with drier cheeks. Balance is key — lightweight hydration and targeted treatments.' },
+    normal:      { label: 'Normal Skin',        emoji: '🌸', desc: 'Your skin is well-balanced. Focus on maintaining your barrier and preventing future concerns.' },
+    sensitive:   { label: 'Sensitive Skin',     emoji: '🤍', desc: 'Your skin reacts easily. Prioritise fragrance-free, gentle formulas that strengthen your skin barrier.' },
+  }
+
   return (
-    <div style={{minHeight:'80vh',display:'flex',alignItems:'center',justifyContent:'center',padding:48}}>
+    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
       {!result ? (
-        <div style={{maxWidth:560,width:'100%',textAlign:'center'}}>
-          <div style={{fontSize:11,letterSpacing:'.2em',textTransform:'uppercase',color:'var(--peach)',marginBottom:16}}>
-            Question {step+1} of {questions.length}
+        <div style={{ maxWidth: 600, width: '100%', textAlign: 'center' }}>
+          <div style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--peach)', marginBottom: 16 }}>
+            Question {step + 1} of {questions.length}
           </div>
-          <div style={{height:4,background:'var(--border)',borderRadius:2,marginBottom:40}}>
-            <div style={{height:'100%',background:'linear-gradient(135deg,var(--peach),var(--pink))',borderRadius:2,width:`${((step+1)/questions.length)*100}%`,transition:'width .4s'}}/>
+          <div style={{ height: 4, background: 'var(--border)', borderRadius: 2, marginBottom: 40 }}>
+            <div style={{ height: '100%', background: 'linear-gradient(135deg,var(--peach),var(--pink))', borderRadius: 2, width: `${((step + 1) / questions.length) * 100}%`, transition: 'width .4s' }} />
           </div>
-          <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:36,fontWeight:300,color:'var(--charcoal)',marginBottom:32}}>
+          <h2 style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: 34, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 32 }}>
             {questions[step].q}
           </h2>
-          <div style={{display:'grid',gap:12}}>
+          <div style={{ display: 'grid', gap: 12 }}>
             {questions[step].options.map(opt => (
-              <button key={opt} onClick={() => answer(opt)} style={{
-                padding:'16px 24px',border:'1.5px solid var(--border)',borderRadius:12,
-                background:'var(--white)',fontSize:14,color:'var(--charcoal)',cursor:'pointer',
-                transition:'all .2s',textAlign:'left',fontFamily:'inherit'
+              <button key={opt.text} onClick={() => answer(opt)} style={{
+                padding: '16px 24px', border: '1.5px solid var(--border)', borderRadius: 12,
+                background: 'var(--white)', fontSize: 14, color: 'var(--charcoal)', cursor: 'pointer',
+                transition: 'all .2s', textAlign: 'left', fontFamily: 'inherit'
               }}
-              onMouseOver={e => { e.currentTarget.style.borderColor='var(--peach)'; e.currentTarget.style.background='var(--peach-light)' }}
-              onMouseOut={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.background='var(--white)' }}>
-                {opt}
+                onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--peach)'; e.currentTarget.style.background = 'var(--peach-light)' }}
+                onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--white)' }}>
+                {opt.text}
               </button>
             ))}
           </div>
+          <button onClick={() => { if (step > 0) { setStep(s => s - 1) } }} style={{ marginTop: 24, background: 'none', border: 'none', color: 'var(--muted)', fontSize: 12, cursor: step > 0 ? 'pointer' : 'default', opacity: step > 0 ? 1 : 0, fontFamily: 'inherit' }}>
+            ← Back
+          </button>
         </div>
       ) : (
-        <div style={{maxWidth:700,width:'100%',textAlign:'center'}}>
-          <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:42,fontWeight:300,color:'var(--charcoal)',marginBottom:8}}>Your Formula</h2>
-          <p style={{color:'var(--muted)',marginBottom:40}}>Based on your answers, we recommend these products for your skin.</p>
-          <div className="product-grid three-col">
-            {result.map(p => (
-              <div key={p.id} className="product-card" onClick={() => navigate(`/product/${p.id}`)} style={{cursor:'pointer'}}>
-                <div className="card-img">
-                  <img src={p.images[0]} alt={p.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
-                </div>
-                <div className="card-body">
-                  <div className="card-category">{p.category}</div>
-                  <div className="card-name">{p.name}</div>
-                  <div className="card-price">£{p.price}.00</div>
-                </div>
+        <div style={{ maxWidth: 800, width: '100%' }}>
+          {/* Skin Type Result */}
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>{skinTypeInfo[result.skinType]?.emoji}</div>
+            <p style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--peach)', marginBottom: 8 }}>Your Skin Type</p>
+            <h2 style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: 48, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 16 }}>
+              {skinTypeInfo[result.skinType]?.label}
+            </h2>
+            <p style={{ color: 'var(--muted)', maxWidth: 500, margin: '0 auto', lineHeight: 1.9, fontSize: 14 }}>
+              {skinTypeInfo[result.skinType]?.desc}
+            </p>
+
+            {/* Concerns badges */}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 20, flexWrap: 'wrap' }}>
+              {result.concerns.map(c => (
+                <span key={c} style={{ background: 'var(--peach-light)', color: 'var(--peach)', fontSize: 12, padding: '6px 16px', borderRadius: 20, textTransform: 'capitalize' }}>
+                  {c === 'acne' ? 'Acne-Prone' : c === 'dullness' ? 'Dullness & Tone' : c === 'mature' ? 'Anti-Ageing' : c === 'dry' ? 'Dehydration' : 'Sensitivity'}
+                </span>
+              ))}
+            </div>
+
+            {saved && (
+              <div style={{ marginTop: 16, fontSize: 12, color: '#166534', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 8, padding: '8px 16px', display: 'inline-block' }}>
+                ✓ Skin profile saved to your account
               </div>
-            ))}
+            )}
+            {!userId && (
+              <div style={{ marginTop: 16, fontSize: 12, color: 'var(--muted)' }}>
+                <span style={{ color: 'var(--peach)', cursor: 'pointer' }} onClick={() => navigate('/login')}>Sign in</span> to save your skin profile
+              </div>
+            )}
           </div>
-          <button className="btn-primary" style={{marginTop:32}} onClick={() => navigate('/catalogue')}>Shop All Products</button>
+
+          {/* Product Recommendations */}
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 40 }}>
+            <h3 style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: 32, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 8, textAlign: 'center' }}>Your Formula</h3>
+            <p style={{ color: 'var(--muted)', fontSize: 13, textAlign: 'center', marginBottom: 32 }}>Personalised picks based on your skin type and concerns</p>
+            <div className="product-grid three-col">
+              {result.recs.map(p => (
+                <div key={p.id} className="product-card" onClick={() => navigate(`/product/${p.id}`)} style={{ cursor: 'pointer' }}>
+                  <div className="card-img">
+                    <img src={p.images[0]} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div className="card-body">
+                    <div className="card-category">{p.category}</div>
+                    <div className="card-name">{p.name}</div>
+                    <div className="card-price">£{p.price}.00</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 40 }}>
+            <button className="btn-primary" onClick={() => navigate('/catalogue')}>Shop All Products</button>
+            <button onClick={() => { setStep(0); setAnswers({}); setResult(null); setSaved(false) }}
+              style={{ background: 'transparent', border: '1.5px solid var(--border)', padding: '13px 32px', fontSize: 13, borderRadius: 40, cursor: 'pointer', fontFamily: 'inherit', color: 'var(--charcoal)' }}>
+              Retake Quiz
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -911,6 +1127,454 @@ function Login() {
   )
 }
 
+function SkinProfileCard({ userId }) {
+  const navigate = useNavigate()
+  const [skinProfile, setSkinProfile] = useState(null)
+  const [recommendations, setRecommendations] = useState([])
+
+  useEffect(() => {
+    if (!userId) return
+    async function load() {
+      const { data } = await db
+        .from('skin_profile').select('*')
+        .eq('user_id', userId).single()
+      if (data) {
+        setSkinProfile(data)
+        // Fetch recommendations from product_recommendation table
+        const { data: recData } = await db
+          .from('product_recommendation')
+          .select('product_id')
+          .eq('skin_type', data.skin_type)
+        if (recData) {
+          const ids = recData.map(r => r.product_id)
+          const recs = PRODUCTS.filter(p => ids.includes(p.id)).slice(0, 4)
+          setRecommendations(recs)
+        }
+      }
+    }
+    load()
+  }, [userId])
+
+  const skinTypeInfo = {
+    oily:        { label: 'Oily Skin',        emoji: '✨' },
+    dry:         { label: 'Dry Skin',         emoji: '🌿' },
+    combination: { label: 'Combination Skin', emoji: '⚖️' },
+    normal:      { label: 'Normal Skin',      emoji: '🌸' },
+    sensitive:   { label: 'Sensitive Skin',   emoji: '🤍' },
+  }
+
+  return (
+    <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 16, padding: 32 }}>
+      <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 26, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 20 }}>Your Skin Profile</h3>
+      {skinProfile ? (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+            <span style={{ fontSize: 36 }}>{skinTypeInfo[skinProfile.skin_type]?.emoji}</span>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--charcoal)' }}>{skinTypeInfo[skinProfile.skin_type]?.label}</div>
+              <div style={{ fontSize: 12, color: 'var(--muted)' }}>Last updated {new Date(skinProfile.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+            {skinProfile.concerns?.map(c => (
+              <span key={c} style={{ background: 'var(--peach-light)', color: 'var(--peach)', fontSize: 11, padding: '4px 14px', borderRadius: 20, textTransform: 'capitalize' }}>{c}</span>
+            ))}
+          </div>
+
+          {/* Recommended Products */}
+          {recommendations.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 12, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 16 }}>Recommended for you</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                {recommendations.map(p => (
+                  <div key={p.id} onClick={() => navigate(`/product/${p.id}`)}
+                    style={{ cursor: 'pointer', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden', background: 'var(--coconut)' }}>
+                    <img src={p.images[0]} alt={p.name}
+                      style={{ width: '100%', height: 80, objectFit: 'cover' }}
+                      onError={e => { e.target.style.display = 'none' }} />
+                    <div style={{ padding: '8px 10px' }}>
+                      <div style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 2 }}>{p.category}</div>
+                      <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--charcoal)', lineHeight: 1.3 }}>{p.name.length > 22 ? p.name.slice(0, 22) + '...' : p.name}</div>
+                      <div style={{ fontSize: 11, color: 'var(--peach)', marginTop: 4 }}>£{p.price}.00</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button onClick={() => navigate('/quiz')} style={{ background: 'transparent', border: '1.5px solid var(--border)', padding: '10px 24px', borderRadius: 40, fontSize: 12, color: 'var(--charcoal)', cursor: 'pointer', fontFamily: 'inherit' }}>
+            Retake Quiz
+          </button>
+        </div>
+      ) : (
+        <div>
+          <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 16 }}>You haven't taken the skin quiz yet. Get personalised product recommendations in under 2 minutes.</p>
+          <button className="btn-primary" onClick={() => navigate('/quiz')}>Take Skin Quiz</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Profile({ userId }) {
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+  const [orders, setOrders] = useState([])
+  const [activeTab, setActiveTab] = useState('overview')
+  const [reviewForm, setReviewForm] = useState({ product_id: '', rating: 5, comment: '' })
+  const [reviewSubmitted, setReviewSubmitted] = useState(false)
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [newsletterDone, setNewsletterDone] = useState(false)
+  const [editForm, setEditForm] = useState({ full_name: '', email: '' })
+  const [editSaved, setEditSaved] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!userId) { navigate('/login'); return }
+    async function load() {
+      // Load user info
+      const { data: userData } = await db
+        .from('users').select('*').eq('user_id', userId).single()
+      if (userData) {
+        setUser(userData)
+        setEditForm({ full_name: userData.username || '', email: userData.email || '' })
+        setNewsletterEmail(userData.email || '')
+      }
+      // Load orders
+      const { data: orderData } = await db
+        .from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+      if (orderData) setOrders(orderData)
+      setLoading(false)
+    }
+    load()
+  }, [userId])
+
+  async function handleSaveProfile() {
+    await db.from('users').update({
+      username: editForm.full_name,
+      email: editForm.email
+    }).eq('user_id', userId)
+    setUser(u => ({ ...u, username: editForm.full_name, email: editForm.email }))
+    setEditSaved(true)
+    setTimeout(() => setEditSaved(false), 2500)
+  }
+
+  async function handleNewsletterSignup() {
+    await db.from('newsletter_subscription').upsert({ email: newsletterEmail, user_id: userId })
+    setNewsletterDone(true)
+  }
+
+  async function handleReviewSubmit() {
+    if (!reviewForm.product_id) return
+    await db.from('reviews').insert({
+      user_id: userId,
+      product_id: parseInt(reviewForm.product_id),
+      rating: reviewForm.rating,
+      comment: reviewForm.comment,
+      created_at: new Date().toISOString()
+    })
+    setReviewSubmitted(true)
+    setTimeout(() => { setReviewSubmitted(false); setReviewForm({ product_id: '', rating: 5, comment: '' }) }, 3000)
+  }
+
+  async function handleDeleteAccount() {
+    await db.from('users').delete().eq('user_id', userId)
+    await db.auth.signOut()
+    navigate('/')
+  }
+
+  async function handleLogout() {
+    await db.auth.signOut()
+    navigate('/')
+  }
+
+  if (loading) return (
+    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ color: 'var(--muted)', fontSize: 14 }}>Loading your profile...</p>
+    </div>
+  )
+
+  const tabs = [
+    { key: 'overview', label: 'Overview' },
+    { key: 'orders', label: 'Orders' },
+    { key: 'review', label: 'Leave a Review' },
+    { key: 'settings', label: 'Settings' },
+  ]
+
+  return (
+    <div style={{ minHeight: '80vh' }}>
+      {/* Hero Banner */}
+      <div style={{
+        background: 'linear-gradient(135deg, #FDE8D8, #FCE7F3)',
+        padding: '48px',
+        borderBottom: '1px solid var(--border)'
+      }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <p style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--peach)', marginBottom: 8 }}>
+              Welcome back
+            </p>
+            <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 48, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 8 }}>
+              Hello, {user?.username || 'there'} 👋
+            </h1>
+            <p style={{ fontSize: 13, color: 'var(--muted)' }}>
+              {user?.email} · Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : ''}
+            </p>
+          </div>
+          <button onClick={handleLogout} style={{
+            background: 'transparent', border: '1.5px solid var(--border)',
+            padding: '10px 24px', borderRadius: 40, fontSize: 12,
+            color: 'var(--muted)', cursor: 'pointer', fontFamily: 'inherit',
+            letterSpacing: '.08em', textTransform: 'uppercase'
+          }}>
+            Sign Out
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--white)' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', gap: 0 }}>
+          {tabs.map(t => (
+            <button key={t.key} onClick={() => setActiveTab(t.key)} style={{
+              padding: '16px 28px', border: 'none', background: 'transparent',
+              fontSize: 13, color: activeTab === t.key ? 'var(--charcoal)' : 'var(--muted)',
+              fontWeight: activeTab === t.key ? 500 : 400, cursor: 'pointer',
+              borderBottom: activeTab === t.key ? '2px solid var(--peach)' : '2px solid transparent',
+              fontFamily: 'inherit', transition: 'all .2s'
+            }}>{t.label}</button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px' }}>
+
+        {/* ── OVERVIEW TAB ── */}
+        {activeTab === 'overview' && (
+          <div style={{ display: 'grid', gap: 24 }}>
+
+            {/* Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+              {[
+                { label: 'Total Orders', value: orders.length },
+                { label: 'Total Spent', value: `£${orders.reduce((s, o) => s + (o.total || 0), 0).toFixed(2)}` },
+                { label: 'Member Since', value: user?.created_at ? new Date(user.created_at).getFullYear() : '—' },
+              ].map(stat => (
+                <div key={stat.label} style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, textAlign: 'center' }}>
+                  <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 36, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 4 }}>{stat.value}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)', letterSpacing: '.1em', textTransform: 'uppercase' }}>{stat.label}</div>
+                </div>
+              ))}
+            </div>
+            <SkinProfileCard userId={userId} />
+            {/* Product Recommendation */}
+            <div style={{ background: 'linear-gradient(135deg, #FDE8D8, #FCE7F3)', borderRadius: 16, padding: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+              <div>
+                <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 28, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 8 }}>
+                  Find your perfect formula ✨
+                </h3>
+                <p style={{ fontSize: 13, color: 'var(--muted)', maxWidth: 400, lineHeight: 1.8 }}>
+                  Answer 4 quick questions and get personalised product recommendations matched to your skin type and concerns.
+                </p>
+              </div>
+              <button className="btn-primary" onClick={() => navigate('/quiz')}>Take Skin Quiz</button>
+            </div>
+
+            {/* Newsletter */}
+            <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 16, padding: 32 }}>
+              <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 26, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 8 }}>
+                Newsletter & Exclusive Offers
+              </h3>
+              <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20, lineHeight: 1.8 }}>
+                Subscribe to get early access to new products, exclusive discount codes, and personalised skincare tips.
+              </p>
+              {newsletterDone ? (
+                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#166534' }}>
+                  🎉 You're subscribed! Check your inbox for a welcome discount code.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <input value={newsletterEmail} onChange={e => setNewsletterEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    style={{ flex: 1, padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--coconut)' }} />
+                  <button className="btn-primary" onClick={handleNewsletterSignup}>Subscribe</button>
+                </div>
+              )}
+            </div>
+
+            {/* Recent Orders Preview */}
+            <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 16, padding: 32 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 26, fontWeight: 300, color: 'var(--charcoal)' }}>Recent Orders</h3>
+                <button onClick={() => setActiveTab('orders')} style={{ background: 'none', border: 'none', color: 'var(--peach)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>View all →</button>
+              </div>
+              {orders.length === 0 ? (
+                <p style={{ color: 'var(--muted)', fontSize: 13 }}>No orders yet. <span style={{ color: 'var(--peach)', cursor: 'pointer' }} onClick={() => navigate('/catalogue')}>Start shopping →</span></p>
+              ) : (
+                orders.slice(0, 3).map(order => (
+                  <div key={order.order_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--charcoal)', marginBottom: 2 }}>Order #{order.order_id}</div>
+                      <div style={{ fontSize: 11, color: 'var(--muted)' }}>{new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--charcoal)' }}>£{order.total?.toFixed(2)}</div>
+                      <div style={{ fontSize: 11, color: 'var(--peach)', textTransform: 'capitalize' }}>{order.status}</div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── ORDERS TAB ── */}
+        {activeTab === 'orders' && (
+          <div>
+            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 36, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 24 }}>Your Orders</h2>
+            {orders.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                <p style={{ color: 'var(--muted)', marginBottom: 20 }}>You haven't placed any orders yet.</p>
+                <button className="btn-primary" onClick={() => navigate('/catalogue')}>Start Shopping</button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {orders.map(order => (
+                  <div key={order.order_id} style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--charcoal)', marginBottom: 4 }}>Order #{order.order_id}</div>
+                        <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 4 }}>{new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                        {order.address && <div style={{ fontSize: 12, color: 'var(--muted)' }}>📍 {order.address}</div>}
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--charcoal)', marginBottom: 4 }}>£{order.total?.toFixed(2)}</div>
+                        <span style={{ background: 'var(--peach-light)', color: 'var(--peach)', fontSize: 11, padding: '4px 12px', borderRadius: 20, textTransform: 'capitalize' }}>
+                          {order.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── REVIEW TAB ── */}
+        {activeTab === 'review' && (
+          <div style={{ maxWidth: 600 }}>
+            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 36, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 8 }}>Leave a Review</h2>
+            <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 32, lineHeight: 1.8 }}>Loved a product? Share your experience to help others find their formula.</p>
+            {reviewSubmitted ? (
+              <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 12, padding: 24, textAlign: 'center' }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>🌟</div>
+                <p style={{ color: '#166534', fontSize: 14 }}>Thank you for your review!</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20, background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 16, padding: 32 }}>
+                <div>
+                  <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Select Product</label>
+                  <select value={reviewForm.product_id} onChange={e => setReviewForm({ ...reviewForm, product_id: e.target.value })}
+                    style={{ width: '100%', padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--coconut)' }}>
+                    <option value="">Choose a product...</option>
+                    {PRODUCTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Rating</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <button key={s} onClick={() => setReviewForm({ ...reviewForm, rating: s })}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 28, padding: 0, opacity: s <= reviewForm.rating ? 1 : 0.3, transition: 'opacity .2s' }}>
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Your Review</label>
+                  <textarea value={reviewForm.comment} onChange={e => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                    placeholder="Tell us about your experience with this product..."
+                    rows={4}
+                    style={{ width: '100%', padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--coconut)', resize: 'vertical' }} />
+                </div>
+                <button className="btn-primary" onClick={handleReviewSubmit} style={{ alignSelf: 'flex-start' }}>Submit Review</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── SETTINGS TAB ── */}
+        {activeTab === 'settings' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 600 }}>
+            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 36, fontWeight: 300, color: 'var(--charcoal)' }}>Account Settings</h2>
+
+            {/* Edit Profile */}
+            <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 16, padding: 32 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 500, color: 'var(--charcoal)', marginBottom: 20 }}>Edit Profile</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 6 }}>Full Name</label>
+                  <input value={editForm.full_name} onChange={e => setEditForm({ ...editForm, full_name: e.target.value })}
+                    style={{ width: '100%', padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--coconut)' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 6 }}>Email Address</label>
+                  <input value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                    style={{ width: '100%', padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--coconut)' }} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <button className="btn-primary" onClick={handleSaveProfile}>Save Changes</button>
+                  {editSaved && <span style={{ fontSize: 12, color: '#166534' }}>✓ Saved successfully</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* Change Password */}
+            <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 16, padding: 32 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 500, color: 'var(--charcoal)', marginBottom: 8 }}>Password</h3>
+              <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 16 }}>Send a password reset link to your email.</p>
+              <button onClick={async () => {
+                await db.auth.resetPasswordForEmail(user?.email)
+                alert('Password reset email sent!')
+              }} style={{ background: 'transparent', border: '1.5px solid var(--border)', padding: '10px 24px', borderRadius: 40, fontSize: 12, color: 'var(--charcoal)', cursor: 'pointer', fontFamily: 'inherit' }}>
+                Send Reset Email
+              </button>
+            </div>
+
+            {/* Delete Account */}
+            <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 16, padding: 32 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 500, color: '#DC2626', marginBottom: 8 }}>Delete Account</h3>
+              <p style={{ fontSize: 13, color: '#EF4444', marginBottom: 16, lineHeight: 1.8 }}>
+                This will permanently delete your account, orders, and all saved data. This action cannot be undone.
+              </p>
+              {!deleteConfirm ? (
+                <button onClick={() => setDeleteConfirm(true)} style={{ background: 'transparent', border: '1.5px solid #FECACA', padding: '10px 24px', borderRadius: 40, fontSize: 12, color: '#DC2626', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  Delete My Account
+                </button>
+              ) : (
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, color: '#DC2626' }}>Are you sure?</span>
+                  <button onClick={handleDeleteAccount} style={{ background: '#DC2626', border: 'none', color: 'white', padding: '10px 24px', borderRadius: 40, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    Yes, Delete
+                  </button>
+                  <button onClick={() => setDeleteConfirm(false)} style={{ background: 'transparent', border: '1.5px solid var(--border)', padding: '10px 24px', borderRadius: 40, fontSize: 12, color: 'var(--muted)', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      <Footer />
+    </div>
+  )
+}
+
 export default function App() {
   const [cart, setCart] = useState([])
   const [toast, setToast] = useState(null)
@@ -1030,12 +1694,12 @@ useEffect(() => {
 
   return (
     <BrowserRouter>
-      <Nav cartCount={cart.length}/>
+      <Nav cartCount={cart.length} userId={userId}/>
       <Routes>
         <Route path="/" element={<Home onAddToCart={addToCart}/>}/>
         <Route path="/catalogue" element={<Catalogue onAddToCart={addToCart}/>}/>
         <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart}/>}/>
-        <Route path="/quiz" element={<SkinQuiz/>}/>
+        <Route path="/quiz" element={<SkinQuiz userId={userId}/>}/>
         <Route path="/about" element={<About/>}/>
         <Route path="/login" element={<Login/>}/>
         <Route path="/cart" element={<Cart cart={cart} onRemove={removeFromCart}/>}/>
