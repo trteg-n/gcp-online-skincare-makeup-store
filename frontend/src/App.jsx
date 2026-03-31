@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom'
+import { supabase } from './supabase.js'
 import './App.css'
 
 const PRODUCTS = [
@@ -712,6 +713,7 @@ function Login() {
   const [form, setForm] = useState({ name:'', email:'', password:'' })
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   function validate() {
     const e = {}
@@ -721,10 +723,55 @@ function Login() {
     return e
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const e = validate()
     setErrors(e)
-    if (Object.keys(e).length === 0) setSubmitted(true)
+    if (Object.keys(e).length > 0) return
+
+    setLoading(true)
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        })
+        if (error) {
+          setErrors({ form: error.message })
+          setLoading(false)
+          return
+        }
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+          options: {
+            data: { full_name: form.name },
+          },
+        })
+        if (error) {
+          setErrors({ form: error.message })
+          setLoading(false)
+          return
+        }
+        // Save profile data to the profiles table
+        if (data.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: data.user.id,
+              full_name: form.name,
+              email: form.email,
+            })
+          if (profileError) {
+            console.error('Profile save error:', profileError.message)
+          }
+        }
+      }
+      setSubmitted(true)
+    } catch (err) {
+      setErrors({ form: 'An unexpected error occurred. Please try again.' })
+    }
+    setLoading(false)
   }
 
   if (submitted) return (
@@ -752,6 +799,7 @@ function Login() {
           <button onClick={() => setIsLogin(false)} style={{flex:1,padding:'10px',border:'none',background:!isLogin?'var(--peach-light)':'transparent',color:!isLogin?'var(--charcoal)':'var(--muted)',fontWeight:!isLogin?500:400,cursor:'pointer',fontFamily:'inherit',fontSize:13}}>Register</button>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
+          {errors.form && <p style={{color:'#EF4444',fontSize:13,textAlign:'center',background:'#FEF2F2',padding:'10px 16px',borderRadius:8}}>{errors.form}</p>}
           {!isLogin && (
             <div>
               <label style={{fontSize:12,color:'var(--muted)',display:'block',marginBottom:6}}>Full Name</label>
@@ -772,8 +820,8 @@ function Login() {
               style={{width:'100%',padding:'12px 16px',border:`1.5px solid ${errors.password?'#F87171':'var(--border)'}`,borderRadius:8,fontSize:13,fontFamily:'inherit',outline:'none',background:'var(--coconut)'}}/>
             {errors.password && <p style={{color:'#EF4444',fontSize:11,marginTop:4}}>{errors.password}</p>}
           </div>
-          <button className="btn-primary" style={{width:'100%',justifyContent:'center',marginTop:8}} onClick={handleSubmit}>
-            {isLogin ? 'Sign In' : 'Create Account'}
+          <button className="btn-primary" style={{width:'100%',justifyContent:'center',marginTop:8,opacity:loading?0.6:1}} onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Please wait…' : (isLogin ? 'Sign In' : 'Create Account')}
           </button>
         </div>
       </div>
