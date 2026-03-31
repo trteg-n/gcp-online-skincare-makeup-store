@@ -30,21 +30,6 @@ const PRODUCTS = [
 
 const CATEGORIES = ['All','Serum','Moisturiser','Foundation','SPF','Eye Care','Toner','Treatment','Lip Care','Cleanser','Makeup']
 
-const [cart, setCart] = useState([])
-const [userId, setUserId] = useState(null)
-const cartCount = cart.reduce((sum, item) => sum + 1, 0)
-useEffect(() => {
-  db.auth.getSession().then(({ data: { session } }) => {
-    if (session) setUserId(session.user.id)
-  })
-
-  const { data: listener } = db.auth.onAuthStateChange((_event, session) => {
-    setUserId(session?.user?.id || null)
-  })
-
-  return () => listener.subscription.unsubscribe()
-}, [])
-
 
 function Nav({ cartCount, userId }) {
   const navigate = useNavigate()
@@ -58,7 +43,7 @@ function Nav({ cartCount, userId }) {
         <Link to="/about">About</Link>
       </div>
       <div className="nav-icons">
-        <button className="nav-icon" onClick={() => navigate(userID ? '/profile' : '/login')} title="Account">
+        <button className="nav-icon" onClick={() => navigate(userId ? '/profile' : '/login')} title="Account">
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
         <button className="nav-icon cart-btn" onClick={() => navigate('/cart')} title="Cart">
@@ -445,7 +430,7 @@ function Cart({ cart, onRemove }) {
 }
 
 
-function Checkout({ cart, onClearCart,user_id}) {
+function Checkout({ cart, onClearCart,user_Id}) {
   const navigate = useNavigate()
   const [form, setForm] = useState({ name:'', email:'', address:'', city:'', postcode:'', card:'', expiry:'', cvv:'' })
   const [errors, setErrors] = useState({})
