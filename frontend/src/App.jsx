@@ -925,7 +925,44 @@ export default function App() {
       setUserId(session?.user?.id || null)
     })
   }, [])
+  // ── Load cart from Supabase when user logs in ──
+useEffect(() => {
+  async function loadCart() {
+    if (!userId) return
 
+    // Get the user's cart
+    const { data: cartData } = await db
+      .from('cart')
+      .select('cart_id')
+      .eq('user_id', userId)
+      .single()
+
+    if (!cartData) return
+
+    // Get all cart items
+    const { data: cartItems } = await db
+      .from('cart_item')
+      .select('product_id, quantity')
+      .eq('cart_id', cartData.cart_id)
+
+    if (!cartItems || cartItems.length === 0) return
+
+    // Rebuild cart array from PRODUCTS to match your existing cart format
+    const rebuilt = []
+    cartItems.forEach(item => {
+      const product = PRODUCTS.find(p => p.id === item.product_id)
+      if (product) {
+        for (let i = 0; i < item.quantity; i++) {
+          rebuilt.push(product)
+        }
+      }
+    })
+
+    setCart(rebuilt)
+  }
+
+  loadCart()
+}, [userId]) // runs every time userId changes (i.e. on login)
   // ── Add to cart ──
   async function addToCart(product) {
     setCart(c => [...c, product])
