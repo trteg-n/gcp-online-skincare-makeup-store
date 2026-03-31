@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom'
+import { supabase } from './utils/supabase/client'
 import './App.css'
 
 const PRODUCTS = [
@@ -712,6 +713,7 @@ function Login() {
   const [form, setForm] = useState({ name:'', email:'', password:'' })
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   function validate() {
     const e = {}
@@ -721,10 +723,42 @@ function Login() {
     return e
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const e = validate()
     setErrors(e)
-    if (Object.keys(e).length === 0) setSubmitted(true)
+    if (Object.keys(e).length > 0) return
+
+    setLoading(true)
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        })
+        if (error) {
+          setErrors({ form: error.message })
+          setLoading(false)
+          return
+        }
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+          options: {
+            data: { full_name: form.name },
+          },
+        })
+        if (error) {
+          setErrors({ form: error.message })
+          setLoading(false)
+          return
+        }
+      }
+      setSubmitted(true)
+    } catch (err) {
+      setErrors({ form: 'Something went wrong. Please try again.' })
+    }
+    setLoading(false)
   }
 
   if (submitted) return (
@@ -772,8 +806,9 @@ function Login() {
               style={{width:'100%',padding:'12px 16px',border:`1.5px solid ${errors.password?'#F87171':'var(--border)'}`,borderRadius:8,fontSize:13,fontFamily:'inherit',outline:'none',background:'var(--coconut)'}}/>
             {errors.password && <p style={{color:'#EF4444',fontSize:11,marginTop:4}}>{errors.password}</p>}
           </div>
-          <button className="btn-primary" style={{width:'100%',justifyContent:'center',marginTop:8}} onClick={handleSubmit}>
-            {isLogin ? 'Sign In' : 'Create Account'}
+          {errors.form && <p style={{color:'#EF4444',fontSize:12,textAlign:'center'}}>{errors.form}</p>}
+          <button className="btn-primary" style={{width:'100%',justifyContent:'center',marginTop:8,opacity:loading?0.6:1}} onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
           </button>
         </div>
       </div>
