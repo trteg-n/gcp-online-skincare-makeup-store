@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Lacquer&display=swap');
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --coconut: #fcf0e2;
+  --peach: #F2A07B;
+  --peach-light: #FDE8D8;
+  --pink: #f79aca;
+  --pink-light: #FCE7F3;
+  --lavender: #C4B5FD;
+  --lavender-light: #EDE9FE;
+  --charcoal: #1C1917;
+  --muted: #78716C;
+  --border: #E7E5E4;
+  --white: #FFFFFF;
+  --shadow: 0 4px 24px rgba(28,25,23,0.08);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif ;
+  background: var(--coconut);
+  color: var(--charcoal);
+}
+
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; font-family: inherit; }
+img { max-width: 100%; }
