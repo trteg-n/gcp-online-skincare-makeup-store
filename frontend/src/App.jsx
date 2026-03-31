@@ -30,22 +30,6 @@ const PRODUCTS = [
 
 const CATEGORIES = ['All','Serum','Moisturiser','Foundation','SPF','Eye Care','Toner','Treatment','Lip Care','Cleanser','Makeup']
 
-const [cart, setCart] = useState([])
-const [userId, setUserId] = useState(null)
-const cartCount = cart.reduce((sum, item) => sum + 1, 0)
-useEffect(() => {
-  db.auth.getSession().then(({ data: { session } }) => {
-    if (session) setUserId(session.user.id)
-  })
-
-  const { data: listener } = db.auth.onAuthStateChange((_event, session) => {
-    setUserId(session?.user?.id || null)
-  })
-
-  return () => listener.subscription.unsubscribe()
-}, [])
-
-
 function Nav({ cartCount }) {
   const navigate = useNavigate()
   return (
