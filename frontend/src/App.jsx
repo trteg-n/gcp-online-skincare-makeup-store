@@ -30,6 +30,133 @@ const PRODUCTS = [
 
 const CATEGORIES = ['All','Serum','Moisturiser','Foundation','SPF','Eye Care','Toner','Treatment','Lip Care','Cleanser','Makeup']
 
+function AnnouncementBar() {
+  const [currentMessage, setCurrentMessage] = useState(0)
+  const messages = [
+    'Free delivery over £40 · Clinically tested · Dermatologist approved',
+    'New: Dragonfruit Glow Mask - 20% off this week!',
+    'Join 50,000+ happy customers · 30-day returns',
+    'Skin quiz takes 2 minutes · Get personalized recommendations'
+  ]
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentMessage(prev => (prev + 1) % messages.length)
+    }, 4000) // Change every 4 seconds
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div className="announcement-bar">
+      <div className="announcement-content">
+        {messages[currentMessage]}
+      </div>
+    </div>
+  )
+}
+
+function NewsletterPopup({ isOpen, onClose }) {
+  const [email, setEmail] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [isWidget, setIsWidget] = useState(false)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!email.includes('@')) return
+
+    setIsSubmitting(true)
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    setIsSubmitting(false)
+    setSubmitted(true)
+
+    // Close popup after 3 seconds
+    setTimeout(() => {
+      onClose()
+      setSubmitted(false)
+      setEmail('')
+      setIsWidget(false)
+    }, 3000)
+  }
+
+  const handleOutsideClick = () => {
+    if (!isWidget) {
+      setIsWidget(true)
+    }
+  }
+
+  const closeWidget = () => {
+    onClose()
+    setIsWidget(false)
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className={`newsletter-popup-overlay ${isWidget ? 'widget-mode' : ''}`} onClick={handleOutsideClick}>
+      <div className={`newsletter-popup ${isWidget ? 'widget' : ''}`} onClick={e => e.stopPropagation()}>
+        <button className="popup-close" onClick={isWidget ? closeWidget : onClose}>×</button>
+
+        {!submitted ? (
+          <>
+            <div className="popup-visual">
+              <img src="/images/serum-1.jpg" alt="Product" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+              <div className="popup-gradient"></div>
+              <div className="popup-discount">10% OFF</div>
+            </div>
+            <div className="popup-header">
+              <h2 className="popup-title">Get 10% Off Your First Order</h2>
+              <p className="popup-subtitle">Subscribe for weekly skincare tips & exclusive deals</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="newsletter-form">
+              <div className="form-group">
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="form-input"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="loading-spinner"></span>
+                      Joining...
+                    </>
+                  ) : (
+                    'Get My 10% Off'
+                  )}
+                </button>
+              </div>
+            </form>
+
+            <p className="popup-footer-text">
+              No spam, unsubscribe anytime. We respect your privacy! 💕
+            </p>
+          </>
+        ) : (
+          <div className="success-message">
+            <div className="success-emoji">🎉</div>
+            <h3>Welcome to the family!</h3>
+            <p>Check your email for your 10% discount code! 💖</p>
+          </div>
+        )}
+      </div>
+      {isWidget && (
+        <div className="newsletter-fab" onClick={() => setIsWidget(false)}>
+          💌
+        </div>
+      )}
+    </div>
+  )
+}
 
 function Nav({ cartCount, userId }) {
   const navigate = useNavigate()
@@ -57,64 +184,133 @@ function Nav({ cartCount, userId }) {
 
 function Footer() {
   const navigate = useNavigate()
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [newsletterSubmitted, setNewsletterSubmitted] = useState(false)
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault()
+    if (newsletterEmail.includes('@')) {
+      setNewsletterSubmitted(true)
+      setTimeout(() => {
+        setNewsletterSubmitted(false)
+        setNewsletterEmail('')
+      }, 3000)
+    }
+  }
+
   return (
     <>
       <footer className="footer">
-        <div>
-          <div className="footer-brand">Formula Me</div>
-          <div className="footer-desc">Skincare-first beauty. Every formula is clinically tested and skin-barrier approved for all skin types.</div>
-        </div>
-        <div>
-          <div className="footer-col-title">Shop</div>
-          <span className="footer-link" onClick={() => navigate('/catalogue')}>All Products</span>
-          <span className="footer-link" onClick={() => navigate('/catalogue')}>Skincare</span>
-          <span className="footer-link" onClick={() => navigate('/catalogue')}>Makeup</span>
-          <span className="footer-link" onClick={() => navigate('/catalogue')}>SPF</span>
-        </div>
-        <div>
-          <div className="footer-col-title">Explore</div>
-          <span className="footer-link" onClick={() => navigate('/quiz')}>Skin Quiz</span>
-          <span className="footer-link" onClick={() => navigate('/about')}>About</span>
-          <span className="footer-link" onClick={() => navigate('/login')}>My Account</span>
-        </div>
-        <div>
-          <div className="footer-col-title">Follow</div>
-          <span className="footer-link">Instagram</span>
-          <span className="footer-link">TikTok</span>
-          <span className="footer-link">Pinterest</span>
+        <div className="footer-main">
+          <div className="footer-section">
+            <div className="footer-brand">Formula Me</div>
+            <div className="footer-desc">Skincare-first beauty. Every formula is clinically tested and skin-barrier approved for all skin types.</div>
+            <div className="newsletter-section">
+              <div className="newsletter-title">Stay in the loop</div>
+              <div className="newsletter-desc">Get exclusive offers, new product launches, and skincare tips.</div>
+              {newsletterSubmitted ? (
+                <div className="newsletter-success">✓ Thanks! Check your email soon.</div>
+              ) : (
+                <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    className="newsletter-input"
+                    required
+                  />
+                  <button type="submit" className="newsletter-btn">Subscribe</button>
+                </form>
+              )}
+            </div>
+          </div>
+
+          <div className="footer-section">
+            <div className="footer-col-title">Company</div>
+            <span className="footer-link" onClick={() => navigate('/about')}>About Us</span>
+            <span className="footer-link">Our Story</span>
+            <span className="footer-link">Careers</span>
+            <span className="footer-link">Press</span>
+            <span className="footer-link">Sustainability</span>
+          </div>
+
+          <div className="footer-section">
+            <div className="footer-col-title">Help</div>
+            <span className="footer-link">Contact Us</span>
+            <span className="footer-link">Shipping Info</span>
+            <span className="footer-link">Returns & Exchanges</span>
+            <span className="footer-link">Size Guide</span>
+            <span className="footer-link">FAQ</span>
+          </div>
+
+          <div className="footer-section">
+            <div className="footer-col-title">Account</div>
+            <span className="footer-link" onClick={() => navigate('/login')}>Sign In</span>
+            <span className="footer-link" onClick={() => navigate('/profile')}>My Account</span>
+            <span className="footer-link">Order History</span>
+            <span className="footer-link" onClick={() => navigate('/quiz')}>Skin Quiz</span>
+            <span className="footer-link">Wishlist</span>
+          </div>
+
+          <div className="footer-section">
+            <div className="footer-col-title">Shop</div>
+            <span className="footer-link" onClick={() => navigate('/catalogue')}>All Products</span>
+            <span className="footer-link" onClick={() => navigate('/catalogue')}>Skincare</span>
+            <span className="footer-link" onClick={() => navigate('/catalogue')}>Makeup</span>
+            <span className="footer-link" onClick={() => navigate('/catalogue')}>SPF</span>
+            <span className="footer-link">Gift Cards</span>
+          </div>
         </div>
       </footer>
       <div className="footer-bottom">
-        <span>© 2026 Formula Me. All rights reserved.</span>
-        <span>Privacy · Cookies · Terms</span>
+        <div className="footer-bottom-content">
+          <span>© 2026 Formula Me. All rights reserved.</span>
+          <div className="footer-bottom-links">
+            <span>Privacy Policy</span>
+            <span>Terms of Service</span>
+            <span>Cookies</span>
+            <span>Accessibility</span>
+          </div>
+        </div>
       </div>
     </>
   )
 }
 
-function ProductCard({ product, onAddToCart }) {
+function ProductCard({ product, onAddToCart, onQuickView, wishlist, onToggleWishlist }) {
   const navigate = useNavigate()
+  const isWishlisted = wishlist.some(p => p.id === product.id)
+  
   return (
     <div className="product-card" onClick={() => navigate(`/product/${product.id}`)}>
-      <div className="card-img">
+      <div className="card-img" style={{position:'relative',overflow:'hidden'}}>
         {product.badge && <span className="card-badge">{product.badge}</span>}
         <img src={product.images[0]} alt={product.name}
-          style={{width:'100%',height:'100%',objectFit:'cover'}}
+          style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .3s ease'}}
+          onMouseEnter={e => e.target.style.transform='scale(1.1)'}
+          onMouseLeave={e => e.target.style.transform='scale(1)'}
           onError={e => { e.target.style.display='none' }}/>
+        <button 
+          onClick={e => { e.stopPropagation(); onToggleWishlist(product) }}
+          style={{position:'absolute',top:12,right:12,width:32,height:32,borderRadius:'50%',background:isWishlisted?'var(--pink)':'rgba(255,255,255,0.9)',border:'none',fontSize:16,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s',zIndex:10}}
+          title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}>
+          {isWishlisted ? '♥' : '♡'}
+        </button>
       </div>
       <div className="card-body">
         <div className="card-category">{product.category}</div>
         <div className="card-name">{product.name}</div>
         <div className="card-footer">
           <span className="card-price">£{product.price}.00</span>
-          <button className="card-add" onClick={e => { e.stopPropagation(); onAddToCart(product) }}>+</button>
+          <button className="card-add" onClick={e => { e.stopPropagation(); onAddToCart(product) }} title="Add to cart">+</button>
         </div>
       </div>
     </div>
   )
 }
 
-function Home({ onAddToCart }) {
+function Home({ onAddToCart, wishlist, onToggleWishlist }) {
   const navigate = useNavigate()
   const featured = PRODUCTS.slice(0, 4)
   const cats = [
@@ -125,7 +321,6 @@ function Home({ onAddToCart }) {
   ]
   return (
     <div>
-      <div className="banner">Free delivery over £40 · Clinically tested · Dermatologist approved</div>
       <section className="hero">
         <div className="hero-text">
           <p className="hero-eyebrow">New Collection · Spring 2026</p>
@@ -153,7 +348,7 @@ function Home({ onAddToCart }) {
           <span className="section-link" onClick={() => navigate('/catalogue')}>View all 20 products</span>
         </div>
         <div className="product-grid">
-          {featured.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart}/>)}
+          {featured.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} wishlist={wishlist} onToggleWishlist={onToggleWishlist}/>)}
         </div>
       </section>
 
@@ -172,22 +367,123 @@ function Home({ onAddToCart }) {
         </div>
       </section>
 
+      <section className="section" style={{background: 'var(--coconut)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)'}}>
+        <div className="section-header">
+          <h2 className="section-title">What Our Customers Say</h2>
+        </div>
+        <CustomerReviewsCarousel />
+      </section>
+
       <Footer/>
     </div>
   )
 }
 
-function Catalogue({ onAddToCart }) {
+function CustomerReviewsCarousel() {
+  const [currentReview, setCurrentReview] = useState(0)
+  const reviews = [
+    {
+      name: 'Sarah A.',
+      rating: 5,
+      text: 'This has completely transformed my skin. I noticed a difference within two weeks.',
+      location: 'London, UK',
+      skinType: 'Dry Skin'
+    },
+    {
+      name: 'Daniel L.',
+      rating: 4,
+      text: 'Really effective formula. Gentle enough for my sensitive skin and no irritation at all.',
+      location: 'Manchester, UK',
+      skinType: 'Sensitive Skin'
+    },
+    {
+      name: 'Maya K.',
+      rating: 5,
+      text: 'I was sceptical at first but this is genuinely the best product I have tried for my skin type.',
+      location: 'Birmingham, UK',
+      skinType: 'Combination Skin'
+    },
+    {
+      name: 'James R.',
+      rating: 5,
+      text: 'The skin quiz was spot on! Products matched my concerns perfectly.',
+      location: 'Edinburgh, UK',
+      skinType: 'Oily Skin'
+    },
+    {
+      name: 'Emma T.',
+      rating: 4,
+      text: 'Love the clean ingredients and how gentle everything is on my skin.',
+      location: 'Bristol, UK',
+      skinType: 'Normal Skin'
+    },
+    {
+      name: 'Alex M.',
+      rating: 5,
+      text: 'Finally found products that work with my skincare routine, not against it.',
+      location: 'Leeds, UK',
+      skinType: 'Mature Skin'
+    }
+  ]
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentReview(prev => (prev + 1) % reviews.length)
+    }, 5000) // Change every 5 seconds
+    return () => clearInterval(interval)
+  }, [])
+
+  const nextReview = () => setCurrentReview(prev => (prev + 1) % reviews.length)
+  const prevReview = () => setCurrentReview(prev => (prev - 1 + reviews.length) % reviews.length)
+
+  return (
+    <div className="reviews-carousel">
+      <div className="review-card">
+        <div className="review-stars">
+          {[1,2,3,4,5].map(s => (
+            <svg key={s} width="16" height="16" viewBox="0 0 24 24" fill={s <= reviews[currentReview].rating ? '#F2A07B' : 'none'} stroke="#F2A07B" strokeWidth="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          ))}
+        </div>
+        <blockquote className="review-text">"{reviews[currentReview].text}"</blockquote>
+        <div className="review-author">
+          <div className="review-name">{reviews[currentReview].name}</div>
+          <div className="review-meta">{reviews[currentReview].location} · {reviews[currentReview].skinType}</div>
+        </div>
+      </div>
+      <div className="carousel-controls">
+        <button className="carousel-btn" onClick={prevReview}>‹</button>
+        <div className="carousel-dots">
+          {reviews.map((_, i) => (
+            <span key={i} className={`dot ${i === currentReview ? 'active' : ''}`} onClick={() => setCurrentReview(i)}></span>
+          ))}
+        </div>
+        <button className="carousel-btn" onClick={nextReview}>›</button>
+      </div>
+    </div>
+  )
+}
+
+function Catalogue({ onAddToCart, wishlist, onToggleWishlist }) {
   const [activeCategory, setActiveCategory] = useState('All')
   const [search, setSearch] = useState('')
   const [minPrice, setMinPrice] = useState(0)
   const [maxPrice, setMaxPrice] = useState(100)
+  const [sortBy, setSortBy] = useState('newest')
 
   const filtered = PRODUCTS.filter(p =>
     (activeCategory === 'All' || p.category === activeCategory) &&
     p.price >= minPrice && p.price <= maxPrice &&
     (p.name.toLowerCase().includes(search.toLowerCase()) || p.category.toLowerCase().includes(search.toLowerCase()))
   )
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === 'price-low') return a.price - b.price
+    if (sortBy === 'price-high') return b.price - a.price
+    if (sortBy === 'popular') return (PRODUCTS.find(p => p.id === b.id)?.badge?.includes('Best') ? 1 : -1)
+    return 0 // newest (default order)
+  }) || []
 
   return (
     <div>
@@ -234,12 +530,19 @@ function Catalogue({ onAddToCart }) {
             <input placeholder="Search products..." value={search} onChange={e=>setSearch(e.target.value)}/>
           </div>
           <div className="catalogue-toolbar">
-            <span className="results-count">Showing <strong>{filtered.length} products</strong></span>
+            <span className="results-count">Showing <strong>{sorted.length} products</strong></span>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+              style={{background:'transparent',border:'1px solid var(--border)',borderRadius:8,padding:'8px 12px',fontSize:12,color:'var(--charcoal)',cursor:'pointer',fontFamily:'inherit'}}>
+              <option value="newest">Newest First</option>
+              <option value="popular">Most Popular</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+            </select>
           </div>
-          {filtered.length === 0
+          {sorted.length === 0
             ? <div style={{textAlign:'center',padding:'60px',color:'var(--muted)'}}>No products found. Try adjusting your filters.</div>
             : <div className="product-grid three-col">
-                {filtered.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart}/>)}
+                {sorted.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} wishlist={wishlist} onToggleWishlist={onToggleWishlist}/>)}
               </div>
           }
         </div>
@@ -249,12 +552,13 @@ function Catalogue({ onAddToCart }) {
   )
 }
 
-function ProductDetail({ onAddToCart }) {
+function ProductDetail({ onAddToCart, wishlist, onToggleWishlist }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const product = PRODUCTS.find(p => p.id === parseInt(id))
   const [qty, setQty] = useState(1)
   const [activeImg, setActiveImg] = useState(0)
+  const isWishlisted = wishlist.some(p => p.id === product?.id)
 
   if (!product) return <div style={{padding:48}}>Product not found. <button onClick={() => navigate('/catalogue')}>Back to shop</button></div>
 
@@ -317,7 +621,10 @@ function ProductDetail({ onAddToCart }) {
               <button className="qty-btn" onClick={() => setQty(q => q+1)}>+</button>
             </div>
             <button className="add-cart" onClick={() => { for(let i=0;i<qty;i++) onAddToCart(product) }}>Add to Cart</button>
-            <button className="wishlist">♡</button>
+            <button className="wishlist" onClick={() => onToggleWishlist(product)} title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+              style={{background:isWishlisted?'var(--pink)':'transparent'}}>
+              {isWishlisted ? '♥' : '♡'}
+            </button>
           </div>
           <div className="divider"/>
           <div className="ingredients-box">
@@ -358,7 +665,7 @@ function ProductDetail({ onAddToCart }) {
             <h2 className="section-title">You May Also Like</h2>
           </div>
           <div className="product-grid">
-            {related.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart}/>)}
+            {related.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} wishlist={wishlist} onToggleWishlist={onToggleWishlist}/>)}
           </div>
         </section>
       )}
@@ -430,7 +737,7 @@ function Cart({ cart, onRemove }) {
 }
 
 
-function Checkout({ cart, onClearCart,user_Id}) {
+function Checkout({ cart, onClearCart, userId }) {
   const navigate = useNavigate()
   const [form, setForm] = useState({ name:'', email:'', address:'', city:'', postcode:'', card:'', expiry:'', cvv:'' })
   const [errors, setErrors] = useState({})
@@ -451,58 +758,58 @@ function Checkout({ cart, onClearCart,user_Id}) {
     return e
   }
   async function handlePlace() {
-  const e = validate()
-  setErrors(e)
-  if (Object.keys(e).length !== 0) return
-  setLoading(true)
+    const e = validate()
+    setErrors(e)
+    if (Object.keys(e).length !== 0) return
+    setLoading(true)
 
-  const total = cart.reduce((sum, item) => sum + item.price, 0)
-  const deliveryCost = total >= 40 ? 0 : 3.99
-  const finalTotal = total + deliveryCost
+    const total = cart.reduce((sum, item) => sum + item.price, 0)
+    const deliveryCost = total >= 40 ? 0 : 3.99
+    const finalTotal = total + deliveryCost
 
-  // 1 — Save order
-  const { data: orderData, error: orderError } = await db
-    .from('orders').insert({
-      user_id: userId || null,
-      total: finalTotal,
-      subtotal_total: total,
-      status: 'confirmed',
-      address: `${form.address}, ${form.city}, ${form.postcode}`,
-      phone_number: null,
-      created_at: new Date().toISOString()
-    }).select().single()
+    // 1 — Save order
+    const { data: orderData, error: orderError } = await db
+      .from('orders').insert({
+        user_id: userId || null,
+        total: finalTotal,
+        subtotal_total: total,
+        status: 'confirmed',
+        address: `${form.address}, ${form.city}, ${form.postcode}`,
+        phone_number: null,
+        created_at: new Date().toISOString()
+      }).select().single()
 
-  if (orderError) {
+    if (orderError) {
+      setLoading(false)
+      alert('Order failed: ' + orderError.message)
+      return
+    }
+
+    // 2 — Save order items
+    const orderItems = cart.map(item => ({
+      orders_id: orderData.order_id,
+      product_id: item.id,
+      quantity: 1,
+      unit_price: item.price
+    }))
+    await db.from('order_items').insert(orderItems)
+
+    // 3 — Save address if logged in
+    if (userId) {
+      await db.from('addresses').insert({
+        user_id: userId,
+        address_text: form.address,
+        city: form.city,
+        state: '',
+        postal_code: form.postcode,
+        country: 'UK'
+      })
+    }
+
     setLoading(false)
-    alert('Order failed: ' + orderError.message)
-    return
+    setPlaced(true)
+    onClearCart()
   }
-
-  // 2 — Save order items
-  const orderItems = cart.map(item => ({
-    orders_id: orderData.order_id,
-    product_id: item.id,
-    quantity: 1,
-    unit_price: item.price
-  }))
-  await db.from('order_items').insert(orderItems)
-
-  // 3 — Save address if logged in
-  if (userId) {
-    await db.from('addresses').insert({
-      user_id: userId,
-      address_text: form.address,
-      city: form.city,
-      state: '',
-      postal_code: form.postcode,
-      country: 'UK'
-    })
-  }
-
-  setLoading(false)
-  setPlaced(true)
-  onClearCart()
-}
 
   function field(label, key, placeholder, type='text') {
     return (
@@ -995,45 +1302,39 @@ function Login() {
     setLoading(true)
 
     if (isLogin) {
-      // ── SIGN IN ──
-      const { data, error } = await db.auth.signInWithPassword({
-        email: form.email,
-        password: form.password
-      })
-      if (error) {
-        setAuthError(error.message)
-        // Log failed login attempt
-        await db.from('failed_logins').insert({ email: form.email })
-      } else {
-        setSubmitted(true)
-      }
-
-    } else {
-      // ── REGISTER ──
-      const { data, error } = await db.auth.signUp({
-        email: form.email,
-        password: form.password
-      })
-      if (error) {
-        setAuthError(error.message)
-      } else {
-        // Save to public.users table
-        const { error: profileError } = await db.from('users').insert({
-          user_id: data.user.id,
-          email: form.email,
-          username: form.name,
-          password_hash: 'SUPABASE_AUTH',
-          created_at: new Date().toISOString()
-        })
-        if (profileError) {
-          setAuthError('Profile save failed: ' + profileError.message)
-        } else {
-          setSubmitted(true)
-        }
-      }
+  // ── SIGN IN ──
+  const { data, error } = await db.auth.signInWithPassword({
+    email: form.email,
+    password: form.password
+  })
+  if (error) {
+    setAuthError(error.message)
+    try {
+      await db.from('failed_logins').insert({ email: form.email, attempted_at: new Date().toISOString() })
+    } catch (logErr) {
+      console.error('Failed to log login attempt:', logErr)
     }
-    setLoading(false)
+  } else {
+    setSubmitted(true)
   }
+
+} else {
+  // ── REGISTER ──
+  const { data, error } = await db.auth.signUp({
+    email: form.email,
+    password: form.password,
+    options: {
+      data: { full_name: form.name }
+    }
+  })
+  if (error) {
+    setAuthError(error.message)
+  } else {
+    setSubmitted(true)
+  }
+}
+
+setLoading(false)
 
   if (submitted) return (
     <div style={{minHeight:'80vh',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16}}>
@@ -1120,21 +1421,23 @@ function SkinProfileCard({ userId }) {
   useEffect(() => {
     if (!userId) return
     async function load() {
-      const { data } = await db
-        .from('skin_profile').select('*')
-        .eq('user_id', userId).single()
-      if (data) {
+      try {
+        const { data, error } = await db
+          .from('skin_profile').select('*')
+          .eq('user_id', userId).single()
+        if (error || !data) return
         setSkinProfile(data)
-        // Fetch recommendations from product_recommendation table
-        const { data: recData } = await db
+        const { data: recData, error: recError } = await db
           .from('product_recommendation')
           .select('product_id')
           .eq('skin_type', data.skin_type)
-        if (recData) {
+        if (!recError && recData) {
           const ids = recData.map(r => r.product_id)
           const recs = PRODUCTS.filter(p => ids.includes(p.id)).slice(0, 4)
           setRecommendations(recs)
         }
+      } catch (err) {
+        console.error('Failed to load skin profile:', err)
       }
     }
     load()
@@ -1562,8 +1865,22 @@ function Profile({ userId }) {
 
 export default function App() {
   const [cart, setCart] = useState([])
+  const [wishlist, setWishlist] = useState([])
   const [toast, setToast] = useState(null)
   const [userId, setUserId] = useState(null)
+  const [showNewsletter, setShowNewsletter] = useState(false)
+
+  // Show newsletter popup after 5 seconds on first visit
+  useEffect(() => {
+    const hasSeenPopup = localStorage.getItem('newsletter-seen')
+    if (!hasSeenPopup) {
+      const timer = setTimeout(() => {
+        setShowNewsletter(true)
+        localStorage.setItem('newsletter-seen', 'true')
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [])
 
   // ── Track logged-in user ──
   useEffect(() => {
@@ -1579,35 +1896,36 @@ useEffect(() => {
   async function loadCart() {
     if (!userId) return
 
-    // Get the user's cart
-    const { data: cartData } = await db
-      .from('cart')
-      .select('cart_id')
-      .eq('user_id', userId)
-      .single()
+    try {
+      const { data: cartData, error: cartError } = await db
+        .from('cart')
+        .select('cart_id')
+        .eq('user_id', userId)
+        .single()
 
-    if (!cartData) return
+      if (cartError || !cartData) return
 
-    // Get all cart items
-    const { data: cartItems } = await db
-      .from('cart_item')
-      .select('product_id, quantity')
-      .eq('cart_id', cartData.cart_id)
+      const { data: cartItems, error: itemsError } = await db
+        .from('cart_item')
+        .select('product_id, quantity')
+        .eq('cart_id', cartData.cart_id)
 
-    if (!cartItems || cartItems.length === 0) return
+      if (itemsError || !cartItems || cartItems.length === 0) return
 
-    // Rebuild cart array from PRODUCTS to match your existing cart format
-    const rebuilt = []
-    cartItems.forEach(item => {
-      const product = PRODUCTS.find(p => p.id === item.product_id)
-      if (product) {
-        for (let i = 0; i < item.quantity; i++) {
-          rebuilt.push(product)
+      const rebuilt = []
+      cartItems.forEach(item => {
+        const product = PRODUCTS.find(p => p.id === item.product_id)
+        if (product) {
+          for (let i = 0; i < item.quantity; i++) {
+            rebuilt.push(product)
+          }
         }
-      }
-    })
+      })
 
-    setCart(rebuilt)
+      setCart(rebuilt)
+    } catch (err) {
+      console.error('Failed to load cart:', err)
+    }
   }
 
   loadCart()
@@ -1662,16 +1980,43 @@ useEffect(() => {
     })
 
     if (userId) {
-      const { data: cartData } = await db
-        .from('cart').select('cart_id')
-        .eq('user_id', userId).single()
+      try {
+        const { data: cartData, error: cartError } = await db
+          .from('cart').select('cart_id')
+          .eq('user_id', userId).single()
 
-      if (cartData) {
-        await db.from('cart_item')
-          .delete()
+        if (cartError || !cartData) return
+
+        const { data: existing } = await db
+          .from('cart_item')
+          .select('cart_item_id, quantity')
           .eq('cart_id', cartData.cart_id)
           .eq('product_id', productId)
+          .single()
+
+        if (existing && existing.quantity > 1) {
+          await db.from('cart_item')
+            .update({ quantity: existing.quantity - 1 })
+            .eq('cart_item_id', existing.cart_item_id)
+        } else {
+          await db.from('cart_item')
+            .delete()
+            .eq('cart_id', cartData.cart_id)
+            .eq('product_id', productId)
+        }
+      } catch (err) {
+        console.error('Failed to remove from cart:', err)
       }
+    }
+  }
+
+  // ── Toggle wishlist ──
+  function toggleWishlist(product) {
+    if (wishlist.some(p => p.id === product.id)) {
+      setWishlist(w => w.filter(p => p.id !== product.id))
+    } else {
+      setWishlist(w => [...w, product])
+      setToast(`${product.name} added to wishlist`)
     }
   }
 
@@ -1679,11 +2024,12 @@ useEffect(() => {
 
   return (
     <BrowserRouter>
+      <AnnouncementBar />
       <Nav cartCount={cart.length} userId={userId}/>
       <Routes>
-        <Route path="/" element={<Home onAddToCart={addToCart}/>}/>
-        <Route path="/catalogue" element={<Catalogue onAddToCart={addToCart}/>}/>
-        <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart}/>}/>
+        <Route path="/" element={<Home onAddToCart={addToCart} wishlist={wishlist} onToggleWishlist={toggleWishlist}/>}/>
+        <Route path="/catalogue" element={<Catalogue onAddToCart={addToCart} wishlist={wishlist} onToggleWishlist={toggleWishlist}/>}/>
+        <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} wishlist={wishlist} onToggleWishlist={toggleWishlist}/>}/>
         <Route path="/quiz" element={<SkinQuiz userId={userId}/>}/>
         <Route path="/about" element={<About/>}/>
         <Route path="/login" element={<Login/>}/>
@@ -1692,6 +2038,10 @@ useEffect(() => {
         <Route path="/profile" element={<Profile userId={userId}/>}/>
       </Routes>
       {toast && <div className="toast">{toast}</div>}
+      <NewsletterPopup
+        isOpen={showNewsletter}
+        onClose={() => setShowNewsletter(false)}
+      />
     </BrowserRouter>
   )
 }
