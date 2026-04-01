@@ -1331,11 +1331,9 @@ function Login() {
     setAuthError(error.message)
   } else {
     setSubmitted(true)
+  }}
+  setLoading(false)
   }
-}
-
-setLoading(false)
-
   if (submitted) return (
     <div style={{minHeight:'80vh',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16}}>
       <div style={{width:64,height:64,borderRadius:'50%',background:'var(--peach-light)',display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -1862,7 +1860,6 @@ function Profile({ userId }) {
     </div>
   )
 }
-
 export default function App() {
   const [cart, setCart] = useState([])
   const [wishlist, setWishlist] = useState([])
@@ -1891,8 +1888,7 @@ export default function App() {
       setUserId(session?.user?.id || null)
     })
   }, [])
-  // ── Load cart from Supabase when user logs in ──
-useEffect(() => {
+  useEffect(() => {
   async function loadCart() {
     if (!userId) return
 
