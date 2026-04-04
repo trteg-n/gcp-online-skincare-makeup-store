@@ -31,34 +31,31 @@ const PRODUCTS = [
 const CATEGORIES = ['All','Serum','Moisturiser','Foundation','SPF','Eye Care','Toner','Treatment','Lip Care','Cleanser','Makeup']
 
 function AnnouncementBar() {
-  const [currentMessage, setCurrentMessage] = useState(0)
   const messages = [
-    'Free delivery over £40 · Clinically tested · Dermatologist approved',
-    'New: Dragonfruit Glow Mask - 20% off this week!',
-    'Join 50,000+ happy customers · 30-day returns',
-    'Skin quiz takes 2 minutes · Get personalized recommendations'
+    '✦Free delivery over £40 · Clinically tested · Dermatologist approved✦',
+    '✦New: Dragonfruit Glow Mask - 20% off this week!✦',
+    '✦Join 50,000+ happy customers · 30-day returns✦',
+    '✦Skin quiz takes under 5 minutes · Get personalized recommendations✦'
   ]
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentMessage(prev => (prev + 1) % messages.length)
-    }, 4000) // Change every 4 seconds
-    return () => clearInterval(interval)
-  }, [])
-
+  const repeated = [...messages, ...messages]
   return (
     <div className="announcement-bar">
-      <div className="announcement-content">
-        {messages[currentMessage]}
+      <div className="announcement-track">
+        {repeated.map((msg, i) => (
+          <span key={i} className="announcement-item">
+            {msg} <span className="announcement-dot"></span>
+          </span>
+        ))}
       </div>
     </div>
   )
 }
 
-function NewsletterPopup({ isOpen, onClose }) {
+function NewsletterPopup({ isOpen, onClose, userId }) {
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState(null)
   const [isWidget, setIsWidget] = useState(false)
 
   const handleSubmit = async (e) => {
@@ -66,18 +63,39 @@ function NewsletterPopup({ isOpen, onClose }) {
     if (!email.includes('@')) return
 
     setIsSubmitting(true)
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    setSubmitted(true)
+    setError(null)
+    
+    try {
+      const { error: insertError } = await db.from('newsletter_subscription').upsert(
+        {
+          email: email.toLowerCase().trim(),
+          user_id: userId || null,
+          subscribed_at: new Date().toISOString()
+        },
+        {
+          onConflict: 'email',
+          ignoreDuplicates: true
+        }
+      )
+      
+      if (insertError) throw insertError
+      
+      setIsSubmitting(false)
+      setSubmitted(true)
 
-    // Close popup after 3 seconds
-    setTimeout(() => {
-      onClose()
-      setSubmitted(false)
-      setEmail('')
-      setIsWidget(false)
-    }, 3000)
+      // Close popup after 3 seconds
+      setTimeout(() => {
+        onClose()
+        setSubmitted(false)
+        setEmail('')
+        setIsWidget(false)
+        setError(null)
+      }, 3000)
+    } catch (err) {
+      setIsSubmitting(false)
+      setError(err.message || 'Failed to subscribe. Please try again.')
+      console.error('Newsletter signup error:', err)
+    }
   }
 
   const handleOutsideClick = () => {
@@ -95,63 +113,74 @@ function NewsletterPopup({ isOpen, onClose }) {
 
   return (
     <div className={`newsletter-popup-overlay ${isWidget ? 'widget-mode' : ''}`} onClick={handleOutsideClick}>
-      <div className={`newsletter-popup ${isWidget ? 'widget' : ''}`} onClick={e => e.stopPropagation()}>
-        <button className="popup-close" onClick={isWidget ? closeWidget : onClose}>×</button>
+      {!isWidget && (
+        <div className="newsletter-popup" onClick={e => e.stopPropagation()}>
+          <button className="popup-close" onClick={onClose}>×</button>
 
-        {!submitted ? (
-          <>
-            <div className="popup-visual">
-              <img src="/images/serum-1.jpg" alt="Product" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
-              <div className="popup-gradient"></div>
-              <div className="popup-discount">10% OFF</div>
-            </div>
-            <div className="popup-header">
-              <h2 className="popup-title">Get 10% Off Your First Order</h2>
-              <p className="popup-subtitle">Subscribe for weekly skincare tips & exclusive deals</p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="newsletter-form">
-              <div className="form-group">
-                <input
-                  type="email"
-                  placeholder="Enter your email address"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="form-input"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="submit-btn"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span className="loading-spinner"></span>
-                      Joining...
-                    </>
-                  ) : (
-                    'Get My 10% Off'
-                  )}
-                </button>
+          {!submitted ? (
+            <>
+              <div className="popup-visual">
+                <img src="/images/serum-1.jpg" alt="Product" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                <div className="popup-gradient"></div>
+                <div className="popup-discount">10% OFF</div>
               </div>
-            </form>
+              <div className="popup-header">
+                <h2 className="popup-title">Get 10% Off Your First Order</h2>
+                <p className="popup-subtitle">Subscribe for weekly skincare tips & exclusive deals</p>
+              </div>
 
-            <p className="popup-footer-text">
-              No spam, unsubscribe anytime. We respect your privacy! 💕
-            </p>
-          </>
-        ) : (
-          <div className="success-message">
-            <div className="success-emoji">🎉</div>
-            <h3>Welcome to the family!</h3>
-            <p>Check your email for your 10% discount code! 💖</p>
-          </div>
-        )}
-      </div>
+              <form onSubmit={handleSubmit} className="newsletter-form">
+                <div className="form-group">
+                  <input
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="form-input"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="submit-btn"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="loading-spinner"></span>
+                        Joining...
+                      </>
+                    ) : (
+                      'Get My 10% Off'
+                    )}
+                  </button>
+                </div>
+                {error && (
+                  <div style={{ background: '#FEE2E2', border: '1px solid #FECACA', borderRadius: 6, padding: '10px 12px', fontSize: 13, color: '#DC2626', marginTop: 8 }}>
+                    {error}
+                  </div>
+                )}
+              </form>
+
+              <p className="popup-footer-text">
+                No spam, unsubscribe anytime. We respect your privacy! 💕
+              </p>
+            </>
+          ) : (
+            <div className="success-message">
+              <div className="success-emoji">🎉</div>
+              <h3>Welcome to the family!</h3>
+              <p>Check your email for your 10% discount code! 💖</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {isWidget && (
-        <div className="newsletter-fab" onClick={() => setIsWidget(false)}>
-          💌
+        <div className="newsletter-pill" onClick={() => setIsWidget(false)}>
+          <span className="newsletter-pill-text">Get 10% Off 💌</span>
+          <button className="newsletter-pill-close" onClick={(e) => { e.stopPropagation(); closeWidget(); }}>
+            ×
+          </button>
         </div>
       )}
     </div>
@@ -164,7 +193,6 @@ function Nav({ cartCount, userId }) {
     <nav className="nav">
       <div className="nav-logo" onClick={() => navigate('/')} style={{cursor:'pointer'}}>Formula Me</div>
       <div className="nav-links">
-        <Link to="/">Home</Link>
         <Link to="/catalogue">Shop</Link>
         <Link to="/quiz">Skin Quiz</Link>
         <Link to="/about">About</Link>
@@ -182,19 +210,42 @@ function Nav({ cartCount, userId }) {
   )
 }
 
-function Footer() {
+function Footer({ userId }) {
   const navigate = useNavigate()
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false)
+  const [newsletterError, setNewsletterError] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleNewsletterSubmit = (e) => {
+  const handleNewsletterSubmit = async (e) => {
     e.preventDefault()
-    if (newsletterEmail.includes('@')) {
+    if (!newsletterEmail.includes('@')) return
+
+    setIsSubmitting(true)
+    setNewsletterError(null)
+
+    try {
+      const { error: insertError } = await db.from('newsletter_subscription').upsert(
+        {
+          email: newsletterEmail.toLowerCase().trim(),
+          user_id: userId || null,
+          subscribed_at: new Date().toISOString()
+        },
+        { onConflict: 'email', ignoreDuplicates: true }
+      )
+
+      if (insertError) throw insertError
+
       setNewsletterSubmitted(true)
       setTimeout(() => {
         setNewsletterSubmitted(false)
         setNewsletterEmail('')
+        setNewsletterError(null)
       }, 3000)
+    } catch (err) {
+      setNewsletterError(err.message || 'Failed to subscribe. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -211,17 +262,27 @@ function Footer() {
               {newsletterSubmitted ? (
                 <div className="newsletter-success">✓ Thanks! Check your email soon.</div>
               ) : (
-                <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
-                  <input
-                    type="email"
-                    placeholder="your@email.com"
-                    value={newsletterEmail}
-                    onChange={(e) => setNewsletterEmail(e.target.value)}
-                    className="newsletter-input"
-                    required
-                  />
-                  <button type="submit" className="newsletter-btn">Subscribe</button>
-                </form>
+                <>
+                  <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
+                    <input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={newsletterEmail}
+                      onChange={(e) => setNewsletterEmail(e.target.value)}
+                      className="newsletter-input"
+                      required
+                      disabled={isSubmitting}
+                    />
+                    <button type="submit" className="newsletter-btn" disabled={isSubmitting}>
+                      {isSubmitting ? 'Subscribing...' : 'Subscribe'}
+                    </button>
+                  </form>
+                  {newsletterError && (
+                    <div style={{ background: '#FEE2E2', border: '1px solid #FECACA', borderRadius: 6, padding: '10px 12px', fontSize: 12, color: '#DC2626', marginTop: 8 }}>
+                      {newsletterError}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -229,19 +290,15 @@ function Footer() {
           <div className="footer-section">
             <div className="footer-col-title">Company</div>
             <span className="footer-link" onClick={() => navigate('/about')}>About Us</span>
-            <span className="footer-link">Our Story</span>
-            <span className="footer-link">Careers</span>
-            <span className="footer-link">Press</span>
-            <span className="footer-link">Sustainability</span>
+            <span className="footer-link" onClick={() => navigate('/sustainability')}>Sustainability</span>
           </div>
 
           <div className="footer-section">
             <div className="footer-col-title">Help</div>
-            <span className="footer-link">Contact Us</span>
-            <span className="footer-link">Shipping Info</span>
-            <span className="footer-link">Returns & Exchanges</span>
-            <span className="footer-link">Size Guide</span>
-            <span className="footer-link">FAQ</span>
+            <span className="footer-link" onClick={() => navigate('/contact')}>Contact Us</span>
+            <span className="footer-link" onClick={() => navigate('/shipping')}>Shipping Info</span>
+            <span className="footer-link" onClick={() => navigate('/returns')}>Returns & Exchanges</span>
+            <span className="footer-link" onClick={() => navigate('/faq')}>FAQ</span>
           </div>
 
           <div className="footer-section">
@@ -250,7 +307,6 @@ function Footer() {
             <span className="footer-link" onClick={() => navigate('/profile')}>My Account</span>
             <span className="footer-link">Order History</span>
             <span className="footer-link" onClick={() => navigate('/quiz')}>Skin Quiz</span>
-            <span className="footer-link">Wishlist</span>
           </div>
 
           <div className="footer-section">
@@ -259,7 +315,6 @@ function Footer() {
             <span className="footer-link" onClick={() => navigate('/catalogue')}>Skincare</span>
             <span className="footer-link" onClick={() => navigate('/catalogue')}>Makeup</span>
             <span className="footer-link" onClick={() => navigate('/catalogue')}>SPF</span>
-            <span className="footer-link">Gift Cards</span>
           </div>
         </div>
       </footer>
@@ -278,9 +333,8 @@ function Footer() {
   )
 }
 
-function ProductCard({ product, onAddToCart, onQuickView, wishlist, onToggleWishlist }) {
+function ProductCard({ product, onAddToCart }) {
   const navigate = useNavigate()
-  const isWishlisted = wishlist.some(p => p.id === product.id)
   
   return (
     <div className="product-card" onClick={() => navigate(`/product/${product.id}`)}>
@@ -291,12 +345,6 @@ function ProductCard({ product, onAddToCart, onQuickView, wishlist, onToggleWish
           onMouseEnter={e => e.target.style.transform='scale(1.1)'}
           onMouseLeave={e => e.target.style.transform='scale(1)'}
           onError={e => { e.target.style.display='none' }}/>
-        <button 
-          onClick={e => { e.stopPropagation(); onToggleWishlist(product) }}
-          style={{position:'absolute',top:12,right:12,width:32,height:32,borderRadius:'50%',background:isWishlisted?'var(--pink)':'rgba(255,255,255,0.9)',border:'none',fontSize:16,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s',zIndex:10}}
-          title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}>
-          {isWishlisted ? '♥' : '♡'}
-        </button>
       </div>
       <div className="card-body">
         <div className="card-category">{product.category}</div>
@@ -310,7 +358,7 @@ function ProductCard({ product, onAddToCart, onQuickView, wishlist, onToggleWish
   )
 }
 
-function Home({ onAddToCart, wishlist, onToggleWishlist }) {
+function Home({ onAddToCart, userId }) {
   const navigate = useNavigate()
   const featured = PRODUCTS.slice(0, 4)
   const cats = [
@@ -348,7 +396,7 @@ function Home({ onAddToCart, wishlist, onToggleWishlist }) {
           <span className="section-link" onClick={() => navigate('/catalogue')}>View all 20 products</span>
         </div>
         <div className="product-grid">
-          {featured.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} wishlist={wishlist} onToggleWishlist={onToggleWishlist}/>)}
+          {featured.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} />)}
         </div>
       </section>
 
@@ -374,7 +422,7 @@ function Home({ onAddToCart, wishlist, onToggleWishlist }) {
         <CustomerReviewsCarousel />
       </section>
 
-      <Footer/>
+      <Footer userId={userId} />
     </div>
   )
 }
@@ -465,7 +513,7 @@ function CustomerReviewsCarousel() {
   )
 }
 
-function Catalogue({ onAddToCart, wishlist, onToggleWishlist }) {
+function Catalogue({ onAddToCart }) {
   const [activeCategory, setActiveCategory] = useState('All')
   const [search, setSearch] = useState('')
   const [minPrice, setMinPrice] = useState(0)
@@ -488,7 +536,6 @@ function Catalogue({ onAddToCart, wishlist, onToggleWishlist }) {
   return (
     <div>
       <div style={{padding:'20px 48px',borderBottom:'1px solid var(--border)'}}>
-        <span style={{fontSize:12,color:'var(--muted)'}}>Home / </span>
         <span style={{fontSize:12,color:'var(--charcoal)'}}>All Products</span>
       </div>
       <div className="catalogue-layout">
@@ -542,7 +589,7 @@ function Catalogue({ onAddToCart, wishlist, onToggleWishlist }) {
           {sorted.length === 0
             ? <div style={{textAlign:'center',padding:'60px',color:'var(--muted)'}}>No products found. Try adjusting your filters.</div>
             : <div className="product-grid three-col">
-                {sorted.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} wishlist={wishlist} onToggleWishlist={onToggleWishlist}/>)}
+                {sorted.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} />)}
               </div>
           }
         </div>
@@ -552,13 +599,12 @@ function Catalogue({ onAddToCart, wishlist, onToggleWishlist }) {
   )
 }
 
-function ProductDetail({ onAddToCart, wishlist, onToggleWishlist }) {
+function ProductDetail({ onAddToCart }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const product = PRODUCTS.find(p => p.id === parseInt(id))
   const [qty, setQty] = useState(1)
   const [activeImg, setActiveImg] = useState(0)
-  const isWishlisted = wishlist.some(p => p.id === product?.id)
 
   if (!product) return <div style={{padding:48}}>Product not found. <button onClick={() => navigate('/catalogue')}>Back to shop</button></div>
 
@@ -573,8 +619,6 @@ function ProductDetail({ onAddToCart, wishlist, onToggleWishlist }) {
   return (
     <div>
       <div className="breadcrumb">
-        <span onClick={() => navigate('/')} style={{cursor:'pointer',color:'var(--peach)'}}>Home</span>
-        <span> / </span>
         <span onClick={() => navigate('/catalogue')} style={{cursor:'pointer',color:'var(--peach)'}}>Shop</span>
         <span> / </span>
         <span>{product.name}</span>
@@ -621,10 +665,6 @@ function ProductDetail({ onAddToCart, wishlist, onToggleWishlist }) {
               <button className="qty-btn" onClick={() => setQty(q => q+1)}>+</button>
             </div>
             <button className="add-cart" onClick={() => { for(let i=0;i<qty;i++) onAddToCart(product) }}>Add to Cart</button>
-            <button className="wishlist" onClick={() => onToggleWishlist(product)} title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-              style={{background:isWishlisted?'var(--pink)':'transparent'}}>
-              {isWishlisted ? '♥' : '♡'}
-            </button>
           </div>
           <div className="divider"/>
           <div className="ingredients-box">
@@ -665,7 +705,7 @@ function ProductDetail({ onAddToCart, wishlist, onToggleWishlist }) {
             <h2 className="section-title">You May Also Like</h2>
           </div>
           <div className="product-grid">
-            {related.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} wishlist={wishlist} onToggleWishlist={onToggleWishlist}/>)}
+            {related.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} />)}
           </div>
         </section>
       )}
@@ -687,7 +727,6 @@ function Cart({ cart, onRemove }) {
   return (
     <div style={{minHeight:'80vh'}}>
       <div style={{padding:'20px 48px',borderBottom:'1px solid var(--border)'}}>
-        <span style={{fontSize:12,color:'var(--muted)'}}>Home / </span>
         <span style={{fontSize:12,color:'var(--charcoal)'}}>Cart</span>
       </div>
       <div style={{maxWidth:900,margin:'0 auto',padding:'48px 24px'}}>
@@ -837,7 +876,7 @@ function Checkout({ cart, onClearCart, userId }) {
   return (
     <div style={{minHeight:'80vh'}}>
       <div style={{padding:'20px 48px',borderBottom:'1px solid var(--border)'}}>
-        <span style={{fontSize:12,color:'var(--muted)'}}>Home / Cart / </span>
+        <span style={{fontSize:12,color:'var(--muted)'}}>Cart / </span>
         <span style={{fontSize:12,color:'var(--charcoal)'}}>Checkout</span>
       </div>
       <div style={{maxWidth:1000,margin:'0 auto',padding:'48px 24px',display:'grid',gridTemplateColumns:'1fr 380px',gap:40}}>
@@ -1315,7 +1354,9 @@ function Login() {
       console.error('Failed to log login attempt:', logErr)
     }
   } else {
-    setSubmitted(true)
+    setLoading(false)
+    navigate('/profile')
+    return
   }
 
 } else {
@@ -1330,7 +1371,9 @@ function Login() {
   if (error) {
     setAuthError(error.message)
   } else {
-    setSubmitted(true)
+    setLoading(false)
+    navigate('/login')
+    return
   }}
   setLoading(false)
   }
@@ -1512,6 +1555,7 @@ function Profile({ userId }) {
   const [reviewSubmitted, setReviewSubmitted] = useState(false)
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterDone, setNewsletterDone] = useState(false)
+  const [newsletterError, setNewsletterError] = useState(null)
   const [editForm, setEditForm] = useState({ full_name: '', email: '' })
   const [editSaved, setEditSaved] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
@@ -1548,8 +1592,34 @@ function Profile({ userId }) {
   }
 
   async function handleNewsletterSignup() {
-    await db.from('newsletter_subscription').upsert({ email: newsletterEmail, user_id: userId })
-    setNewsletterDone(true)
+    if (!newsletterEmail.includes('@')) return
+    
+    try {
+      setNewsletterError(null)
+      const { error: insertError } = await db.from('newsletter_subscription').upsert(
+        {
+          email: newsletterEmail.toLowerCase().trim(),
+          user_id: userId || null,
+          subscribed_at: new Date().toISOString()
+        },
+        {
+          onConflict: 'email',
+          ignoreDuplicates: true
+        }
+      )
+      
+      if (insertError) throw insertError
+      
+      setNewsletterDone(true)
+      setTimeout(() => {
+        setNewsletterDone(false)
+        setNewsletterEmail(user?.email || '')
+        setNewsletterError(null)
+      }, 4000)
+    } catch (err) {
+      console.error('Newsletter signup error:', err)
+      setNewsletterError(err.message || 'Failed to subscribe. Please try again.')
+    }
   }
 
   async function handleReviewSubmit() {
@@ -1676,17 +1746,24 @@ function Profile({ userId }) {
               <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20, lineHeight: 1.8 }}>
                 Subscribe to get early access to new products, exclusive discount codes, and personalised skincare tips.
               </p>
-              {newsletterDone ? (
+            {newsletterDone ? (
                 <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#166534' }}>
                   🎉 You're subscribed! Check your inbox for a welcome discount code.
                 </div>
               ) : (
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <input value={newsletterEmail} onChange={e => setNewsletterEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    style={{ flex: 1, padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--coconut)' }} />
-                  <button className="btn-primary" onClick={handleNewsletterSignup}>Subscribe</button>
-                </div>
+                <>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: newsletterError ? 12 : 0 }}>
+                    <input value={newsletterEmail} onChange={e => setNewsletterEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      style={{ flex: 1, padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--coconut)' }} />
+                    <button className="btn-primary" onClick={handleNewsletterSignup}>Subscribe</button>
+                  </div>
+                  {newsletterError && (
+                    <div style={{ background: '#FEE2E2', border: '1px solid #FECACA', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#DC2626' }}>
+                      {newsletterError}
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -1860,9 +1937,748 @@ function Profile({ userId }) {
     </div>
   )
 }
+function Sustainability() {
+  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState('packaging')
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress(prev => Math.min(prev + 1, 100))
+    }, 50)
+    return () => clearInterval(interval)
+  }, [])
+
+  const tabs = [
+    { id: 'packaging', label: 'Eco Packaging', icon: '📦', color: '#F2A07B' },
+    { id: 'ingredients', label: 'Clean Ingredients', icon: '🌿', color: '#F472B6' },
+    { id: 'carbon', label: 'Carbon Neutral', icon: '🌍', color: '#C4B5FD' },
+    { id: 'community', label: 'Community Impact', icon: '🤝', color: '#FDE8D8' }
+  ]
+
+  return (
+    <div>
+      <section style={{background: 'linear-gradient(135deg, #FDF8F2, #FDE8D8)', padding:'100px 48px', textAlign:'center'}}>
+        <p style={{fontSize:11,letterSpacing:'.2em',textTransform:'uppercase',color:'#F2A07B',marginBottom:16}}>Our Commitment</p>
+        <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:58,fontWeight:300,color:'#F472B6',maxWidth:700,margin:'0 auto 24px',lineHeight:1.15}}>
+          Beauty that <em style={{color:'#C4B5FD'}}>heals</em> the planet
+        </h1>
+        <p style={{fontSize:15,color:'#666',maxWidth:540,margin:'0 auto',lineHeight:1.9}}>
+          Every product is designed with both your skin and our earth in mind. We're on a mission to make beauty sustainable, ethical, and kind.
+        </p>
+        <div style={{marginTop:40, display:'flex', justifyContent:'center', gap:20, flexWrap:'wrap'}}>
+          <div style={{background:'white', padding:'24px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)', minWidth:200}}>
+            <div style={{fontSize:32, marginBottom:8}}>🌱</div>
+            <div style={{fontSize:24, fontWeight:'bold', color:'#F2A07B'}}>100%</div>
+            <div style={{fontSize:14, color:'#666'}}>Recyclable Packaging</div>
+          </div>
+          <div style={{background:'white', padding:'24px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)', minWidth:200}}>
+            <div style={{fontSize:32, marginBottom:8}}>♻️</div>
+            <div style={{fontSize:24, fontWeight:'bold', color:'#F472B6'}}>50%</div>
+            <div style={{fontSize:14, color:'#666'}}>Less Plastic Waste</div>
+          </div>
+          <div style={{background:'white', padding:'24px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)', minWidth:200}}>
+            <div style={{fontSize:32, marginBottom:8}}>🌍</div>
+            <div style={{fontSize:24, fontWeight:'bold', color:'#C4B5FD'}}>Carbon</div>
+            <div style={{fontSize:14, color:'#666'}}>Neutral Shipping</div>
+          </div>
+        </div>
+      </section>
+
+      <section style={{padding:'80px 48px'}}>
+        <div style={{maxWidth:1000, margin:'0 auto'}}>
+          <div style={{display:'flex', gap:0, marginBottom:40, borderBottom:'1px solid #eee'}}>
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  flex:1, padding:'20px', border:'none', background:'transparent',
+                  borderBottom: activeTab === tab.id ? `3px solid ${tab.color}` : '3px solid transparent',
+                  color: activeTab === tab.id ? tab.color : '#666', fontSize:16, fontWeight: activeTab === tab.id ? 600 : 400,
+                  cursor:'pointer', transition:'all .3s', display:'flex', flexDirection:'column', alignItems:'center', gap:8
+                }}>
+                <span style={{fontSize:24}}>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {activeTab === 'packaging' && (
+            <div style={{textAlign:'center'}}>
+              <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:36, fontWeight:300, color:'#F2A07B', marginBottom:20}}>Revolutionary Packaging</h2>
+              <p style={{fontSize:16, color:'#666', lineHeight:1.8, marginBottom:40}}>
+                Our packaging is 100% recyclable and made from post-consumer waste. Watch as we transform recycled materials into beautiful, functional designs.
+              </p>
+              <div style={{background:'#FDF8F2', padding:'40px', borderRadius:20, marginBottom:40}}>
+                <div style={{width:'100%', height:8, background:'#eee', borderRadius:4, marginBottom:20, overflow:'hidden'}}>
+                  <div style={{width:`${progress}%`, height:'100%', background:`linear-gradient(90deg, #F2A07B, #F472B6)`, transition:'width .1s'}}></div>
+                </div>
+                <p style={{color:'#666'}}>Recycling Progress: {progress}% of our packaging is now recycled materials</p>
+              </div>
+              <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))', gap:20}}>
+                <div style={{background:'white', padding:'24px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
+                  <div style={{fontSize:40, marginBottom:16}}>📦</div>
+                  <h3 style={{color:'#F2A07B', marginBottom:12}}>Smart Boxes</h3>
+                  <p style={{color:'#666', lineHeight:1.6}}>Our boxes are designed to be reused as storage or decor. No more waste!</p>
+                </div>
+                <div style={{background:'white', padding:'24px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
+                  <div style={{fontSize:40, marginBottom:16}}>🌊</div>
+                  <h3 style={{color:'#F472B6', marginBottom:12}}>Ocean-Safe</h3>
+                  <p style={{color:'#666', lineHeight:1.6}}>All materials are biodegradable and won't harm marine life if they end up in waterways.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'ingredients' && (
+            <div style={{textAlign:'center'}}>
+              <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:36, fontWeight:300, color:'#F472B6', marginBottom:20}}>Clean Beauty Standards</h2>
+              <p style={{fontSize:16, color:'#666', lineHeight:1.8, marginBottom:40}}>
+                We believe in transparency. Every ingredient is carefully selected for both efficacy and environmental impact.
+              </p>
+              <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:20}}>
+                {[
+                  { name: 'Vegan', icon: '🌱', desc: 'No animal-derived ingredients' },
+                  { name: 'Cruelty-Free', icon: '🐰', desc: 'Never tested on animals' },
+                  { name: 'Organic', icon: '🍃', desc: 'Sustainably sourced botanicals' },
+                  { name: 'Non-Toxic', icon: '✨', desc: 'Safe for skin and planet' }
+                ].map(item => (
+                  <div key={item.name} style={{background:'white', padding:'24px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)', textAlign:'center'}}>
+                    <div style={{fontSize:32, marginBottom:12}}>{item.icon}</div>
+                    <h3 style={{color:'#F472B6', marginBottom:8}}>{item.name}</h3>
+                    <p style={{color:'#666', fontSize:14, lineHeight:1.5}}>{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'carbon' && (
+            <div style={{textAlign:'center'}}>
+              <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:36, fontWeight:300, color:'#C4B5FD', marginBottom:20}}>Carbon Neutral Journey</h2>
+              <p style={{fontSize:16, color:'#666', lineHeight:1.8, marginBottom:40}}>
+                We're committed to achieving carbon neutrality by 2027. Here's how we're getting there.
+              </p>
+              <div style={{background:'linear-gradient(135deg, #C4B5FD, #FDE8D8)', padding:'40px', borderRadius:20, color:'white'}}>
+                <h3 style={{marginBottom:20, fontSize:24}}>Our Carbon Goals</h3>
+                <div style={{display:'flex', justifyContent:'space-around', flexWrap:'wrap', gap:20}}>
+                  <div>
+                    <div style={{fontSize:36, fontWeight:'bold'}}>2025</div>
+                    <div>50% Reduction</div>
+                  </div>
+                  <div>
+                    <div style={{fontSize:36, fontWeight:'bold'}}>2026</div>
+                    <div>75% Reduction</div>
+                  </div>
+                  <div>
+                    <div style={{fontSize:36, fontWeight:'bold'}}>2027</div>
+                    <div>Carbon Neutral</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'community' && (
+            <div style={{textAlign:'center'}}>
+              <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:36, fontWeight:300, color:'#FDE8D8', marginBottom:20}}>Giving Back</h2>
+              <p style={{fontSize:16, color:'#666', lineHeight:1.8, marginBottom:40}}>
+                For every product sold, we donate to organizations fighting climate change and supporting sustainable beauty education.
+              </p>
+              <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))', gap:20}}>
+                <div style={{background:'white', padding:'24px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
+                  <div style={{fontSize:40, marginBottom:16}}>🌳</div>
+                  <h3 style={{color:'#F2A07B', marginBottom:12}}>Tree Planting</h3>
+                  <p style={{color:'#666', lineHeight:1.6}}>We plant one tree for every order, helping restore forests worldwide.</p>
+                </div>
+                <div style={{background:'white', padding:'24px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
+                  <div style={{fontSize:40, marginBottom:16}}>🎓</div>
+                  <h3 style={{color:'#F472B6', marginBottom:12}}>Beauty Education</h3>
+                  <p style={{color:'#666', lineHeight:1.6}}>Supporting programs that teach sustainable beauty practices to underserved communities.</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section style={{background:'#F472B6', padding:'80px 48px', textAlign:'center', color:'white'}}>
+        <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:38, fontWeight:300, marginBottom:16}}>Join Our Mission</h2>
+        <p style={{fontSize:16, opacity:0.9, marginBottom:32, maxWidth:600, margin:'0 auto'}}>Every purchase contributes to a more sustainable beauty industry. Together, we can make a difference.</p>
+        <button className="btn-primary" onClick={() => navigate('/catalogue')} style={{background:'white', color:'#F472B6'}}>Shop Sustainably</button>
+      </section>
+
+      <Footer/>
+    </div>
+  )
+}
+
+function Contact() {
+  const navigate = useNavigate()
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const [submitted, setSubmitted] = useState(false)
+  const [activeFAQ, setActiveFAQ] = useState(null)
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setSubmitted(true)
+    setTimeout(() => {
+      setSubmitted(false)
+      setForm({ name: '', email: '', subject: '', message: '' })
+    }, 3000)
+  }
+
+  const faqs = [
+    { q: 'How do I track my order?', a: 'Once your order ships, you\'ll receive a tracking number via email with a link to track your package.' },
+    { q: 'Can I change my order?', a: 'Orders can be modified within 1 hour of placement. Contact us immediately if you need changes.' },
+    { q: 'Do you ship internationally?', a: 'Yes! We ship to over 50 countries. International shipping rates vary by location.' },
+    { q: 'What\'s your return policy?', a: 'We offer 30-day returns on all products. Items must be unused and in original packaging.' }
+  ]
+
+  return (
+    <div>
+      <section style={{background: 'linear-gradient(135deg, #FDE8D8, #F2A07B)', padding:'100px 48px', textAlign:'center'}}>
+        <p style={{fontSize:11,letterSpacing:'.2em',textTransform:'uppercase',color:'white',marginBottom:16}}>Get In Touch</p>
+        <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:58,fontWeight:300,color:'white',maxWidth:700,margin:'0 auto 24px',lineHeight:1.15}}>
+          We'd love to hear from <em style={{color:'#C4B5FD'}}>you</em>
+        </h1>
+        <p style={{fontSize:15,color:'rgba(255,255,255,0.9)',maxWidth:540,margin:'0 auto',lineHeight:1.9}}>
+          Have a question about our products, need help with an order, or just want to say hello? We're here to help!
+        </p>
+      </section>
+
+      <section style={{padding:'80px 48px'}}>
+        <div style={{maxWidth:1200, margin:'0 auto', display:'grid', gridTemplateColumns:'1fr 1fr', gap:60}}>
+
+          <div>
+            <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:36, fontWeight:300, color:'#F2A07B', marginBottom:20}}>Send Us a Message</h2>
+            {submitted ? (
+              <div style={{background:'#F0FDF4', border:'1px solid #BBF7D0', borderRadius:16, padding:'40px', textAlign:'center'}}>
+                <div style={{fontSize:48, marginBottom:16}}>💌</div>
+                <h3 style={{color:'#166534', marginBottom:12}}>Message Sent!</h3>
+                <p style={{color:'#166534'}}>We'll get back to you within 24 hours.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} style={{display:'flex', flexDirection:'column', gap:20}}>
+                <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:20}}>
+                  <input
+                    type="text"
+                    placeholder="Your Name"
+                    value={form.name}
+                    onChange={e => setForm({...form, name: e.target.value})}
+                    style={{padding:'16px', border:'1px solid #ddd', borderRadius:8, fontSize:14}}
+                    required
+                  />
+                  <input
+                    type="email"
+                    placeholder="Your Email"
+                    value={form.email}
+                    onChange={e => setForm({...form, email: e.target.value})}
+                    style={{padding:'16px', border:'1px solid #ddd', borderRadius:8, fontSize:14}}
+                    required
+                  />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Subject"
+                  value={form.subject}
+                  onChange={e => setForm({...form, subject: e.target.value})}
+                  style={{padding:'16px', border:'1px solid #ddd', borderRadius:8, fontSize:14}}
+                  required
+                />
+                <textarea
+                  placeholder="Your Message"
+                  value={form.message}
+                  onChange={e => setForm({...form, message: e.target.value})}
+                  rows={6}
+                  style={{padding:'16px', border:'1px solid #ddd', borderRadius:8, fontSize:14, resize:'vertical'}}
+                  required
+                />
+                <button type="submit" style={{background:'#F2A07B', color:'white', border:'none', padding:'16px', borderRadius:8, fontSize:16, cursor:'pointer'}}>
+                  Send Message
+                </button>
+              </form>
+            )}
+          </div>
+
+          <div>
+            <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:36, fontWeight:300, color:'#F472B6', marginBottom:20}}>Quick Answers</h2>
+            <div style={{display:'flex', flexDirection:'column', gap:16}}>
+              {faqs.map((faq, i) => (
+                <div key={i} style={{border:'1px solid #eee', borderRadius:12, overflow:'hidden'}}>
+                  <button
+                    onClick={() => setActiveFAQ(activeFAQ === i ? null : i)}
+                    style={{width:'100%', padding:'20px', background:'white', border:'none', textAlign:'left', cursor:'pointer', fontSize:16, fontWeight:500}}
+                  >
+                    {faq.q}
+                    <span style={{float:'right', transform: activeFAQ === i ? 'rotate(45deg)' : 'rotate(0deg)', transition:'transform .3s'}}>+</span>
+                  </button>
+                  {activeFAQ === i && (
+                    <div style={{padding:'0 20px 20px 20px', color:'#666', lineHeight:1.6}}>
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div style={{marginTop:40, padding:'24px', background:'#FDF8F2', borderRadius:16}}>
+              <h3 style={{color:'#F2A07B', marginBottom:12}}>Need Immediate Help?</h3>
+              <p style={{color:'#666', marginBottom:16}}>For urgent order issues, call us directly:</p>
+              <div style={{fontSize:20, fontWeight:'bold', color:'#F472B6'}}>📞 +44 20 1234 5678</div>
+              <div style={{fontSize:14, color:'#666', marginTop:8}}>Mon-Fri 9AM-6PM GMT</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer/>
+    </div>
+  )
+}
+
+function Shipping() {
+  const navigate = useNavigate()
+  const [selectedCountry, setSelectedCountry] = useState('UK')
+  const [showCalculator, setShowCalculator] = useState(false)
+
+  const shippingOptions = {
+    UK: [
+      { method: 'Standard', time: '2-3 business days', cost: 'Free', icon: '🚚' },
+      { method: 'Express', time: 'Next business day', cost: '£5.99', icon: '⚡' }
+    ],
+    EU: [
+      { method: 'Standard', time: '3-5 business days', cost: '£8.99', icon: '🚚' },
+      { method: 'Express', time: '2-3 business days', cost: '£15.99', icon: '⚡' }
+    ],
+    US: [
+      { method: 'Standard', time: '5-7 business days', cost: '£12.99', icon: '🚚' },
+      { method: 'Express', time: '3-4 business days', cost: '£25.99', icon: '⚡' }
+    ]
+  }
+
+  return (
+    <div>
+      <section style={{background: 'linear-gradient(135deg, #C4B5FD, #FDE8D8)', padding:'100px 48px', textAlign:'center'}}>
+        <p style={{fontSize:11,letterSpacing:'.2em',textTransform:'uppercase',color:'white',marginBottom:16}}>Fast & Reliable</p>
+        <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:58,fontWeight:300,color:'white',maxWidth:700,margin:'0 auto 24px',lineHeight:1.15}}>
+          Shipping made <em style={{color:'#F2A07B'}}>simple</em>
+        </h1>
+        <p style={{fontSize:15,color:'rgba(255,255,255,0.9)',maxWidth:540,margin:'0 auto',lineHeight:1.9}}>
+          We partner with the world's best carriers to get your beauty essentials to you quickly and safely.
+        </p>
+        <button
+          onClick={() => setShowCalculator(!showCalculator)}
+          style={{marginTop:32, background:'white', color:'#C4B5FD', border:'none', padding:'16px 32px', borderRadius:40, fontSize:16, cursor:'pointer', fontWeight:500}}
+        >
+          {showCalculator ? 'Hide' : 'Show'} Shipping Calculator
+        </button>
+      </section>
+
+      {showCalculator && (
+        <section style={{padding:'40px 48px', background:'#FDF8F2'}}>
+          <div style={{maxWidth:600, margin:'0 auto', textAlign:'center'}}>
+            <h2 style={{color:'#F2A07B', marginBottom:20}}>Calculate Your Shipping</h2>
+            <select
+              value={selectedCountry}
+              onChange={e => setSelectedCountry(e.target.value)}
+              style={{padding:'12px', border:'1px solid #ddd', borderRadius:8, fontSize:16, marginBottom:20, minWidth:200}}
+            >
+              <option value="UK">United Kingdom</option>
+              <option value="EU">European Union</option>
+              <option value="US">United States</option>
+            </select>
+            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:20}}>
+              {shippingOptions[selectedCountry].map((option, i) => (
+                <div key={i} style={{background:'white', padding:'24px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
+                  <div style={{fontSize:32, marginBottom:12}}>{option.icon}</div>
+                  <h3 style={{color:'#F472B6', marginBottom:8}}>{option.method}</h3>
+                  <div style={{color:'#666', marginBottom:4}}>{option.time}</div>
+                  <div style={{fontSize:20, fontWeight:'bold', color:'#F2A07B'}}>{option.cost}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section style={{padding:'80px 48px'}}>
+        <div style={{maxWidth:1000, margin:'0 auto'}}>
+          <div style={{textAlign:'center', marginBottom:60}}>
+            <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:40, fontWeight:300, color:'#F472B6', marginBottom:20}}>Shipping Information</h2>
+            <p style={{fontSize:16, color:'#666', lineHeight:1.8}}>
+              Everything you need to know about getting your Formula Me products delivered to your door.
+            </p>
+          </div>
+
+          <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))', gap:40}}>
+            <div style={{background:'white', padding:'32px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
+              <div style={{fontSize:48, marginBottom:20}}>📦</div>
+              <h3 style={{color:'#F2A07B', marginBottom:16}}>Order Processing</h3>
+              <p style={{color:'#666', lineHeight:1.7}}>
+                Orders are processed within 1-2 business days. You'll receive a confirmation email with tracking information once your order ships.
+              </p>
+            </div>
+
+            <div style={{background:'white', padding:'32px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
+              <div style={{fontSize:48, marginBottom:20}}>🌍</div>
+              <h3 style={{color:'#C4B5FD', marginBottom:16}}>International Shipping</h3>
+              <p style={{color:'#666', lineHeight:1.7}}>
+                We ship to over 50 countries worldwide. International orders may be subject to customs fees and import duties.
+              </p>
+            </div>
+
+            <div style={{background:'white', padding:'32px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
+              <div style={{fontSize:48, marginBottom:20}}>🔒</div>
+              <h3 style={{color:'#F472B6', marginBottom:16}}>Secure Packaging</h3>
+              <p style={{color:'#666', lineHeight:1.7}}>
+                All products are carefully packaged to prevent damage during transit. Fragile items receive extra protection.
+              </p>
+            </div>
+
+            <div style={{background:'white', padding:'32px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
+              <div style={{fontSize:48, marginBottom:20}}>📱</div>
+              <h3 style={{color:'#FDE8D8', marginBottom:16}}>Tracking Updates</h3>
+              <p style={{color:'#666', lineHeight:1.7}}>
+                Real-time tracking updates are sent via email and SMS. You can also track your order from your account dashboard.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style={{background:'#F2A07B', padding:'80px 48px', textAlign:'center', color:'white'}}>
+        <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:38, fontWeight:300, marginBottom:16}}>Questions About Shipping?</h2>
+        <p style={{fontSize:16, opacity:0.9, marginBottom:32}}>Our customer service team is here to help with any shipping concerns.</p>
+        <button className="btn-primary" onClick={() => navigate('/contact')} style={{background:'white', color:'#F2A07B'}}>Contact Us</button>
+      </section>
+
+      <Footer/>
+    </div>
+  )
+}
+
+function Returns() {
+  const navigate = useNavigate()
+  const [step, setStep] = useState(1)
+  const [selectedReason, setSelectedReason] = useState('')
+
+  const reasons = [
+    { id: 'wrong', label: 'Wrong Item Sent', icon: '❌' },
+    { id: 'damaged', label: 'Item Damaged', icon: '💔' },
+    { id: 'not-as-described', label: 'Not as Described', icon: '🤔' },
+    { id: 'changed-mind', label: 'Changed My Mind', icon: '💭' }
+  ]
+
+  return (
+    <div>
+      <section style={{background: 'linear-gradient(135deg, #F472B6, #C4B5FD)', padding:'100px 48px', textAlign:'center'}}>
+        <p style={{fontSize:11,letterSpacing:'.2em',textTransform:'uppercase',color:'white',marginBottom:16}}>Hassle-Free</p>
+        <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:58,fontWeight:300,color:'white',maxWidth:700,margin:'0 auto 24px',lineHeight:1.15}}>
+          Returns & <em style={{color:'#FDE8D8'}}>Exchanges</em>
+        </h1>
+        <p style={{fontSize:15,color:'rgba(255,255,255,0.9)',maxWidth:540,margin:'0 auto',lineHeight:1.9}}>
+          Not happy with your purchase? No problem. We offer 30-day returns and easy exchanges on all items.
+        </p>
+      </section>
+
+      <section style={{padding:'80px 48px'}}>
+        <div style={{maxWidth:1000, margin:'0 auto'}}>
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:60}}>
+
+            <div>
+              <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:36, fontWeight:300, color:'#F472B6', marginBottom:20}}>Return Process</h2>
+              <div style={{display:'flex', flexDirection:'column', gap:24}}>
+                {[
+                  { step: 1, title: 'Contact Us', desc: 'Email or call us within 30 days of delivery', icon: '📧' },
+                  { step: 2, title: 'Get Approval', desc: 'We\'ll provide a return label and instructions', icon: '✅' },
+                  { step: 3, title: 'Pack & Ship', desc: 'Send items back in original packaging', icon: '📦' },
+                  { step: 4, title: 'Refund Processed', desc: 'Refunds appear in 3-5 business days', icon: '💰' }
+                ].map(item => (
+                  <div key={item.step} style={{display:'flex', gap:16, alignItems:'flex-start'}}>
+                    <div style={{background:'#FDE8D8', color:'#F472B6', width:40, height:40, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, fontWeight:'bold', flexShrink:0}}>
+                      {item.step}
+                    </div>
+                    <div>
+                      <h3 style={{color:'#F2A07B', marginBottom:4}}>{item.title}</h3>
+                      <p style={{color:'#666', lineHeight:1.6}}>{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:36, fontWeight:300, color:'#C4B5FD', marginBottom:20}}>Interactive Return Guide</h2>
+              <div style={{background:'white', padding:'32px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
+                <div style={{marginBottom:24}}>
+                  <div style={{fontSize:14, color:'#666', marginBottom:8}}>Step {step} of 4</div>
+                  <div style={{width:'100%', height:4, background:'#eee', borderRadius:2}}>
+                    <div style={{width:`${(step/4)*100}%`, height:'100%', background:'linear-gradient(90deg, #F472B6, #C4B5FD)', borderRadius:2, transition:'width .3s'}}></div>
+                  </div>
+                </div>
+
+                {step === 1 && (
+                  <div>
+                    <h3 style={{color:'#F472B6', marginBottom:16}}>Why are you returning?</h3>
+                    <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12}}>
+                      {reasons.map(reason => (
+                        <button
+                          key={reason.id}
+                          onClick={() => { setSelectedReason(reason.id); setStep(2) }}
+                          style={{padding:'16px', border:'1px solid #ddd', borderRadius:8, background:'white', cursor:'pointer', textAlign:'left', transition:'all .2s'}}
+                          onMouseOver={e => e.style.borderColor = '#F472B6'}
+                          onMouseOut={e => e.style.borderColor = '#ddd'}
+                        >
+                          <div style={{fontSize:20, marginBottom:8}}>{reason.icon}</div>
+                          <div style={{fontSize:14, fontWeight:500}}>{reason.label}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {step === 2 && (
+                  <div>
+                    <h3 style={{color:'#C4B5FD', marginBottom:16}}>Package your items</h3>
+                    <p style={{color:'#666', marginBottom:16}}>Make sure to include:</p>
+                    <ul style={{color:'#666', lineHeight:1.8}}>
+                      <li>✓ Original packaging</li>
+                      <li>✓ All accessories and manuals</li>
+                      <li>✓ Return authorization label</li>
+                    </ul>
+                    <button onClick={() => setStep(3)} style={{marginTop:20, background:'#F472B6', color:'white', border:'none', padding:'12px 24px', borderRadius:8, cursor:'pointer'}}>
+                      Next Step
+                    </button>
+                  </div>
+                )}
+
+                {step === 3 && (
+                  <div>
+                    <h3 style={{color:'#F2A07B', marginBottom:16}}>Choose shipping method</h3>
+                    <div style={{display:'flex', gap:12, marginBottom:20}}>
+                      <button style={{flex:1, padding:'12px', border:'1px solid #F2A07B', borderRadius:8, background:'white', color:'#F2A07B', cursor:'pointer'}}>Free Return Label</button>
+                      <button style={{flex:1, padding:'12px', border:'1px solid #ddd', borderRadius:8, background:'white', color:'#666', cursor:'pointer'}}>Drop Off</button>
+                    </div>
+                    <button onClick={() => setStep(4)} style={{background:'#C4B5FD', color:'white', border:'none', padding:'12px 24px', borderRadius:8, cursor:'pointer'}}>
+                      Complete Return
+                    </button>
+                  </div>
+                )}
+
+                {step === 4 && (
+                  <div style={{textAlign:'center'}}>
+                    <div style={{fontSize:48, marginBottom:16}}>🎉</div>
+                    <h3 style={{color:'#F472B6', marginBottom:12}}>Return Submitted!</h3>
+                    <p style={{color:'#666'}}>We'll process your return within 3-5 business days.</p>
+                    <button onClick={() => { setStep(1); setSelectedReason('') }} style={{marginTop:16, background:'#FDE8D8', color:'#F472B6', border:'none', padding:'12px 24px', borderRadius:8, cursor:'pointer'}}>
+                      Start Over
+                    </button>
+                  </div>
+                )}
+
+                {step > 1 && step < 4 && (
+                  <button onClick={() => setStep(step - 1)} style={{marginTop:16, background:'transparent', color:'#666', border:'1px solid #ddd', padding:'8px 16px', borderRadius:8, cursor:'pointer'}}>
+                    ← Back
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style={{background:'#FDE8D8', padding:'80px 48px', textAlign:'center'}}>
+        <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:38, fontWeight:300, color:'#F472B6', marginBottom:16}}>30-Day Return Guarantee</h2>
+        <p style={{fontSize:16, color:'#666', marginBottom:32, maxWidth:600, margin:'0 auto'}}>
+          Love it or return it. No questions asked. Your satisfaction is our top priority.
+        </p>
+        <div style={{display:'flex', justifyContent:'center', gap:20}}>
+          <button className="btn-primary" onClick={() => navigate('/contact')} style={{background:'#F472B6'}}>Start Return</button>
+          <button onClick={() => navigate('/catalogue')} style={{background:'transparent', color:'#F472B6', border:'1px solid #F472B6', padding:'13px 32px', borderRadius:40, cursor:'pointer'}}>
+            Shop Again
+          </button>
+        </div>
+      </section>
+
+      <Footer/>
+    </div>
+  )
+}
+
+function FAQ() {
+  const navigate = useNavigate()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [activeCategory, setActiveCategory] = useState('all')
+  const [expandedItems, setExpandedItems] = useState(new Set())
+
+  const toggleItem = (id) => {
+    const newExpanded = new Set(expandedItems)
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id)
+    } else {
+      newExpanded.add(id)
+    }
+    setExpandedItems(newExpanded)
+  }
+
+  const faqData = [
+    {
+      category: 'orders',
+      question: 'How do I place an order?',
+      answer: 'Simply browse our products, add items to your cart, and proceed to checkout. You can pay with card or PayPal.'
+    },
+    {
+      category: 'orders',
+      question: 'Can I modify my order after placing it?',
+      answer: 'Orders can be modified within 1 hour of placement. Please contact us immediately if you need changes.'
+    },
+    {
+      category: 'shipping',
+      question: 'Do you ship internationally?',
+      answer: 'Yes! We ship to over 50 countries. Shipping costs and delivery times vary by location.'
+    },
+    {
+      category: 'shipping',
+      question: 'How long does shipping take?',
+      answer: 'UK orders typically arrive in 2-3 business days. International orders take 5-10 business days.'
+    },
+    {
+      category: 'returns',
+      question: 'What is your return policy?',
+      answer: 'We offer 30-day returns on all products. Items must be unused and in original packaging.'
+    },
+    {
+      category: 'returns',
+      question: 'How do I start a return?',
+      answer: 'Contact our customer service team with your order number. We\'ll provide a return label and instructions.'
+    },
+    {
+      category: 'products',
+      question: 'Are your products cruelty-free?',
+      answer: 'Yes! All Formula Me products are 100% cruelty-free and never tested on animals.'
+    },
+    {
+      category: 'products',
+      question: 'Do you offer samples?',
+      answer: 'We occasionally include samples with orders. Sign up for our newsletter to be notified of sample promotions.'
+    },
+    {
+      category: 'account',
+      question: 'How do I create an account?',
+      answer: 'Click "Sign In" in the top navigation and select "Register" to create your account.'
+    },
+    {
+      category: 'account',
+      question: 'Can I save my skin profile?',
+      answer: 'Yes! Take our skin quiz and your results will be saved to your account for personalized recommendations.'
+    }
+  ]
+
+  const categories = [
+    { id: 'all', label: 'All Questions', color: '#F2A07B' },
+    { id: 'orders', label: 'Orders', color: '#F472B6' },
+    { id: 'shipping', label: 'Shipping', color: '#C4B5FD' },
+    { id: 'returns', label: 'Returns', color: '#FDE8D8' },
+    { id: 'products', label: 'Products', color: '#F2A07B' },
+    { id: 'account', label: 'Account', color: '#F472B6' }
+  ]
+
+  const filteredFAQs = faqData.filter(faq => {
+    const matchesSearch = faq.question.toLowerCase().includes(searchTerm.toLowerCase()) || faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = activeCategory === 'all' || faq.category === activeCategory
+    return matchesSearch && matchesCategory
+  })
+
+  return (
+    <div>
+      <section style={{background: 'linear-gradient(135deg, #F2A07B, #FDE8D8)', padding:'100px 48px', textAlign:'center'}}>
+        <p style={{fontSize:11,letterSpacing:'.2em',textTransform:'uppercase',color:'white',marginBottom:16}}>Help Center</p>
+        <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:58,fontWeight:300,color:'white',maxWidth:700,margin:'0 auto 24px',lineHeight:1.15}}>
+          Frequently Asked <em style={{color:'#C4B5FD'}}>Questions</em>
+        </h1>
+        <p style={{fontSize:15,color:'rgba(255,255,255,0.9)',maxWidth:540,margin:'0 auto',lineHeight:1.9}}>
+          Can't find what you're looking for? Our FAQ covers everything from orders to skincare advice.
+        </p>
+        <div style={{marginTop:40, maxWidth:400, margin:'40px auto 0'}}>
+          <input
+            type="text"
+            placeholder="Search questions..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            style={{width:'100%', padding:'16px 20px', border:'none', borderRadius:40, fontSize:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}
+          />
+        </div>
+      </section>
+
+      <section style={{padding:'60px 48px'}}>
+        <div style={{maxWidth:1000, margin:'0 auto'}}>
+          <div style={{display:'flex', gap:0, marginBottom:40, borderBottom:'1px solid #eee', overflowX:'auto'}}>
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                style={{
+                  padding:'16px 24px', border:'none', background:'transparent',
+                  borderBottom: activeCategory === cat.id ? `3px solid ${cat.color}` : '3px solid transparent',
+                  color: activeCategory === cat.id ? cat.color : '#666', fontSize:14, fontWeight: activeCategory === cat.id ? 600 : 400,
+                  cursor:'pointer', transition:'all .3s', whiteSpace:'nowrap', flexShrink:0
+                }}>
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          <div style={{display:'flex', flexDirection:'column', gap:16}}>
+            {filteredFAQs.map((faq, index) => (
+              <div key={index} style={{background:'white', border:'1px solid #eee', borderRadius:12, overflow:'hidden'}}>
+                <button
+                  onClick={() => toggleItem(index)}
+                  style={{width:'100%', padding:'24px', background:'white', border:'none', textAlign:'left', cursor:'pointer', fontSize:16, fontWeight:500, display:'flex', justifyContent:'space-between', alignItems:'center'}}
+                >
+                  <span>{faq.question}</span>
+                  <span style={{transform: expandedItems.has(index) ? 'rotate(45deg)' : 'rotate(0deg)', transition:'transform .3s', fontSize:20}}>+</span>
+                </button>
+                {expandedItems.has(index) && (
+                  <div style={{padding:'0 24px 24px 24px', color:'#666', lineHeight:1.7, borderTop:'1px solid #f5f5f5'}}>
+                    {faq.answer}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {filteredFAQs.length === 0 && (
+            <div style={{textAlign:'center', padding:'60px 0', color:'#666'}}>
+              <div style={{fontSize:48, marginBottom:16}}>🤔</div>
+              <p>No questions found matching your search.</p>
+              <button onClick={() => { setSearchTerm(''); setActiveCategory('all') }} style={{marginTop:16, background:'#F2A07B', color:'white', border:'none', padding:'12px 24px', borderRadius:8, cursor:'pointer'}}>
+                Clear Filters
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section style={{background:'#C4B5FD', padding:'80px 48px', textAlign:'center', color:'white'}}>
+        <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:38, fontWeight:300, marginBottom:16}}>Still Need Help?</h2>
+        <p style={{fontSize:16, opacity:0.9, marginBottom:32}}>Our friendly customer service team is here to assist you.</p>
+        <div style={{display:'flex', justifyContent:'center', gap:20}}>
+          <button className="btn-primary" onClick={() => navigate('/contact')} style={{background:'white', color:'#C4B5FD'}}>Contact Us</button>
+          <button onClick={() => navigate('/')} style={{background:'transparent', color:'white', border:'1px solid white', padding:'13px 32px', borderRadius:40, cursor:'pointer'}}>
+            Back to Home
+          </button>
+        </div>
+      </section>
+
+      <Footer/>
+    </div>
+  )
+}
+
 export default function App() {
   const [cart, setCart] = useState([])
-  const [wishlist, setWishlist] = useState([])
   const [toast, setToast] = useState(null)
   const [userId, setUserId] = useState(null)
   const [showNewsletter, setShowNewsletter] = useState(false)
@@ -2006,16 +2822,6 @@ export default function App() {
     }
   }
 
-  // ── Toggle wishlist ──
-  function toggleWishlist(product) {
-    if (wishlist.some(p => p.id === product.id)) {
-      setWishlist(w => w.filter(p => p.id !== product.id))
-    } else {
-      setWishlist(w => [...w, product])
-      setToast(`${product.name} added to wishlist`)
-    }
-  }
-
   function clearCart() { setCart([]) }
 
   return (
@@ -2023,11 +2829,16 @@ export default function App() {
       <AnnouncementBar />
       <Nav cartCount={cart.length} userId={userId}/>
       <Routes>
-        <Route path="/" element={<Home onAddToCart={addToCart} wishlist={wishlist} onToggleWishlist={toggleWishlist}/>}/>
-        <Route path="/catalogue" element={<Catalogue onAddToCart={addToCart} wishlist={wishlist} onToggleWishlist={toggleWishlist}/>}/>
-        <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} wishlist={wishlist} onToggleWishlist={toggleWishlist}/>}/>
+        <Route path="/" element={<Home onAddToCart={addToCart} userId={userId} />}/>
+        <Route path="/catalogue" element={<Catalogue onAddToCart={addToCart} />}/>
+        <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />}/>
         <Route path="/quiz" element={<SkinQuiz userId={userId}/>}/>
         <Route path="/about" element={<About/>}/>
+        <Route path="/sustainability" element={<Sustainability/>}/>
+        <Route path="/contact" element={<Contact/>}/>
+        <Route path="/shipping" element={<Shipping/>}/>
+        <Route path="/returns" element={<Returns/>}/>
+        <Route path="/faq" element={<FAQ/>}/>
         <Route path="/login" element={<Login/>}/>
         <Route path="/cart" element={<Cart cart={cart} onRemove={removeFromCart}/>}/>
         <Route path="/checkout" element={<Checkout cart={cart} onClearCart={clearCart} userId={userId}/>}/>
@@ -2037,6 +2848,7 @@ export default function App() {
       <NewsletterPopup
         isOpen={showNewsletter}
         onClose={() => setShowNewsletter(false)}
+        userId={userId}
       />
     </BrowserRouter>
   )

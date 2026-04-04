@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase configuration - replace with your own credentials
@@ -7,6 +8,7 @@ const supabaseKey = 'public-anon-key'; // Your anon public key
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const Register = () => {
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
@@ -24,10 +26,11 @@ const Register = () => {
 
         if (error) {
             setError(error.message);
+            setLoading(false);
         } else {
-            alert('Registration successful!');
+            setLoading(false);
+            navigate('/login');
         }
-        setLoading(false);
     };
 
     return (
