@@ -31,25 +31,21 @@ const PRODUCTS = [
 const CATEGORIES = ['All','Serum','Moisturiser','Foundation','SPF','Eye Care','Toner','Treatment','Lip Care','Cleanser','Makeup']
 
 function AnnouncementBar() {
-  const [currentMessage, setCurrentMessage] = useState(0)
   const messages = [
-    'Free delivery over £40 · Clinically tested · Dermatologist approved',
-    'New: Dragonfruit Glow Mask - 20% off this week!',
-    'Join 50,000+ happy customers · 30-day returns',
-    'Skin quiz takes 2 minutes · Get personalized recommendations'
+    '✦Free delivery over £40 · Clinically tested · Dermatologist approved✦',
+    '✦New: Dragonfruit Glow Mask - 20% off this week!✦',
+    '✦Join 50,000+ happy customers · 30-day returns✦',
+    '✦Skin quiz takes under 5 minutes · Get personalized recommendations✦'
   ]
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentMessage(prev => (prev + 1) % messages.length)
-    }, 4000) // Change every 4 seconds
-    return () => clearInterval(interval)
-  }, [])
-
+  const repeated = [...messages, ...messages]
   return (
     <div className="announcement-bar">
-      <div className="announcement-content">
-        {messages[currentMessage]}
+      <div className="announcement-track">
+        {repeated.map((msg, i) => (
+          <span key={i} className="announcement-item">
+            {msg} <span className="announcement-dot"></span>
+          </span>
+        ))}
       </div>
     </div>
   )
@@ -162,13 +158,13 @@ function Nav({ cartCount, userId }) {
   const navigate = useNavigate()
   return (
     <nav className="nav">
-      <div className="nav-logo" onClick={() => navigate('/')} style={{cursor:'pointer'}}>Formula Me</div>
+       <div className="nav-logo" onClick={() => navigate('/')} style={{cursor:'pointer'}}>Formula Me</div>
       <div className="nav-links">
-        <Link to="/">Home</Link>
-        <Link to="/catalogue">Shop</Link>
-        <Link to="/quiz">Skin Quiz</Link>
-        <Link to="/about">About</Link>
-      </div>
+  <Link to="/" onClick={() => window.scrollTo(0, 0)}>Home</Link>
+  <Link to="/catalogue">Shop</Link>
+  <Link to="/quiz">Skin Quiz</Link>
+  <Link to="/about">About</Link>
+</div>
       <div className="nav-icons">
         <button className="nav-icon" onClick={() => navigate(userId ? '/profile' : '/login')} title="Account">
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -1495,7 +1491,7 @@ function SkinProfileCard({ userId }) {
         </div>
       ) : (
         <div>
-          <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 16 }}>You haven't taken the skin quiz yet. Get personalised product recommendations in under 2 minutes.</p>
+          <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 16 }}>You haven't taken the skin quiz yet. Get personalised product recommendations in under 5 minutes.</p>
           <button className="btn-primary" onClick={() => navigate('/quiz')}>Take Skin Quiz</button>
         </div>
       )}
@@ -1662,7 +1658,7 @@ function Profile({ userId }) {
                   Find your perfect formula ✨
                 </h3>
                 <p style={{ fontSize: 13, color: 'var(--muted)', maxWidth: 400, lineHeight: 1.8 }}>
-                  Answer 4 quick questions and get personalised product recommendations matched to your skin type and concerns.
+                  Answer 10 quick questions and get personalised product recommendations matched to your skin type and concerns.
                 </p>
               </div>
               <button className="btn-primary" onClick={() => navigate('/quiz')}>Take Skin Quiz</button>
