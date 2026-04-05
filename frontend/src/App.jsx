@@ -754,155 +754,77 @@ function Home({ onAddToCart, userId }) {
 
 function CustomerReviewsCarousel() {
   const [currentReview, setCurrentReview] = useState(0)
-  const reviews = [
-    {
-      name: 'Sarah A.',
-      rating: 5,
-      text: 'This has completely transformed my skin. I noticed a difference within two weeks.',
-      location: 'London, UK',
-      skinType: 'Dry Skin'
-    },
-    {
-      name: 'Daniel L.',
-      rating: 4,
-      text: 'Really effective formula. Gentle enough for my sensitive skin and no irritation at all.',
-      location: 'Manchester, UK',
-      skinType: 'Sensitive Skin'
-    },
-    {
-      name: 'Maya K.',
-      rating: 5,
-      text: 'I was sceptical at first but this is genuinely the best product I have tried for my skin type.',
-      location: 'Birmingham, UK',
-      skinType: 'Combination Skin'
-    },
-    {
-      name: 'James R.',
-      rating: 5,
-      text: 'The skin quiz was spot on! Products matched my concerns perfectly.',
-      location: 'Edinburgh, UK',
-      skinType: 'Oily Skin'
-    },
-    {
-      name: 'Emma T.',
-      rating: 4,
-      text: 'Love the clean ingredients and how gentle everything is on my skin.',
-      location: 'Bristol, UK',
-      skinType: 'Normal Skin'
-    },
-    {
-      name: 'Alex M.',
-      rating: 5,
-      text: 'Finally found products that work with my skincare routine, not against it.',
-      location: 'Leeds, UK',
-      skinType: 'Mature Skin'
-    }
+  const [reviews, setReviews] = useState([])
+
+  const fallbackReviews = [
+    { name: 'Sarah A.', rating: 5, text: 'This has completely transformed my skin. I noticed a difference within two weeks.', location: 'London, UK', skinType: 'Dry Skin' },
+    { name: 'Daniel L.', rating: 4, text: 'Really effective formula. Gentle enough for my sensitive skin.', location: 'Manchester, UK', skinType: 'Sensitive Skin' },
+    { name: 'Maya K.', rating: 5, text: 'I was sceptical at first but this is genuinely the best skincare I have tried.', location: 'Birmingham, UK', skinType: 'Combination Skin' },
   ]
 
   useEffect(() => {
+    async function fetchBrandReviews() {
+      try {
+        const { data, error } = await db
+          .from('reviews')
+          .select('rating, comment, created_at, users(username)')
+          .is('product_id', null)
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        if (!error && data && data.length > 0) {
+          setReviews(data.map(r => ({
+            name: r.users?.username || 'Anonymous',
+            rating: r.rating,
+            text: r.comment || '',
+            location: 'UK',
+            skinType: 'Formula Me Customer'
+          })))
+        } else {
+          setReviews(fallbackReviews)
+        }
+      } catch {
+        setReviews(fallbackReviews)
+      }
+    }
+    fetchBrandReviews()
+  }, [])
+
+  useEffect(() => {
+    if (reviews.length === 0) return
     const interval = setInterval(() => {
       setCurrentReview(prev => (prev + 1) % reviews.length)
-    }, 5000) // Change every 5 seconds
+    }, 5000)
     return () => clearInterval(interval)
-  }, [])
+  }, [reviews])
 
   const nextReview = () => setCurrentReview(prev => (prev + 1) % reviews.length)
   const prevReview = () => setCurrentReview(prev => (prev - 1 + reviews.length) % reviews.length)
 
+  if (reviews.length === 0) return <div style={{ textAlign: 'center', padding: 40, color: 'var(--muted)' }}>Loading reviews...</div>
+
   return (
-    <motion.div
-      className="reviews-carousel"
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-    >
-      <motion.div
-        className="review-card"
-        key={currentReview}
-        initial={{ opacity: 0, x: 50 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -50 }}
-        transition={{ duration: 0.5 }}
-      >
-        <motion.div
-          className="review-stars"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
+    <motion.div className="reviews-carousel" initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+      <motion.div className="review-card" key={currentReview} initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
+        <div className="review-stars">
           {[1,2,3,4,5].map(s => (
-            <motion.svg
-              key={s}
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill={s <= reviews[currentReview].rating ? '#F2A07B' : 'none'}
-              stroke="#F2A07B"
-              strokeWidth="2"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.3 + s * 0.1 }}
-            >
+            <svg key={s} width="16" height="16" viewBox="0 0 24 24" fill={s <= reviews[currentReview].rating ? '#F2A07B' : 'none'} stroke="#F2A07B" strokeWidth="2">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-            </motion.svg>
-          ))}
-        </motion.div>
-        <motion.blockquote
-          className="review-text"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          "{reviews[currentReview].text}"
-        </motion.blockquote>
-        <motion.div
-          className="review-author"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
-          <div className="review-name">{reviews[currentReview].name}</div>
-          <div className="review-meta">{reviews[currentReview].location} · {reviews[currentReview].skinType}</div>
-        </motion.div>
-      </motion.div>
-      <div className="carousel-controls">
-        <motion.button
-          className="carousel-btn"
-          onClick={prevReview}
-          whileHover={{ scale: 1.1, backgroundColor: 'rgba(242, 160, 123, 0.1)' }}
-          whileTap={{ scale: 0.95 }}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, delay: 0.8 }}
-        >
-          ‹
-        </motion.button>
-        <div className="carousel-dots">
-          {reviews.map((_, i) => (
-            <motion.span
-              key={i}
-              className={`dot ${i === currentReview ? 'active' : ''}`}
-              onClick={() => setCurrentReview(i)}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 1 + i * 0.1 }}
-            ></motion.span>
+            </svg>
           ))}
         </div>
-        <motion.button
-          className="carousel-btn"
-          onClick={nextReview}
-          whileHover={{ scale: 1.1, backgroundColor: 'rgba(242, 160, 123, 0.1)' }}
-          whileTap={{ scale: 0.95 }}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, delay: 0.8 }}
-        >
-          ›
-        </motion.button>
+        <blockquote className="review-text">"{reviews[currentReview].text}"</blockquote>
+        <div className="review-author">
+          <div className="review-name">{reviews[currentReview].name}</div>
+          <div className="review-meta">{reviews[currentReview].location} · {reviews[currentReview].skinType}</div>
+        </div>
+      </motion.div>
+      <div className="carousel-controls">
+        <button className="carousel-btn" onClick={prevReview}>‹</button>
+        <div className="carousel-dots">
+          {reviews.map((_, i) => <span key={i} className={`dot ${i === currentReview ? 'active' : ''}`} onClick={() => setCurrentReview(i)}></span>)}
+        </div>
+        <button className="carousel-btn" onClick={nextReview}>›</button>
       </div>
     </motion.div>
   )
@@ -998,7 +920,75 @@ function Catalogue({ onAddToCart }) {
     </div>
   )
 }
+function ProductReviews({ productId }) {
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(true)
 
+  useEffect(() => {
+    async function fetchProductReviews() {
+      try {
+        const { data, error } = await db
+          .from('reviews')
+          .select('rating, comment, created_at, users(username)')
+          .eq('product_id', productId)
+          .order('created_at', { ascending: false })
+        if (!error && data) setReviews(data)
+      } catch (err) {
+        console.error('Failed to load reviews:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProductReviews()
+  }, [productId])
+
+  const fallback = [
+    { users: { username: 'Sarah A.' }, rating: 5, comment: 'This has completely transformed my skin. I noticed a difference within two weeks.', created_at: '2026-02-01' },
+    { users: { username: 'Daniel L.' }, rating: 4, comment: 'Really effective formula. Gentle enough for my sensitive skin and no irritation at all.', created_at: '2026-01-01' },
+    { users: { username: 'Maya K.' }, rating: 5, comment: 'I was sceptical at first but this is genuinely the best product I have tried.', created_at: '2026-03-01' },
+  ]
+
+  const displayReviews = reviews.length > 0 ? reviews : fallback
+
+  return (
+    <section className="section" style={{ borderTop: '1px solid var(--border)' }}>
+      <div className="section-header">
+        <h2 className="section-title">Customer Reviews</h2>
+        <span style={{ fontSize: 13, color: 'var(--muted)' }}>
+          {reviews.length > 0 ? `${reviews.length} review${reviews.length !== 1 ? 's' : ''}` : 'Sample reviews'}
+        </span>
+      </div>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 40, color: 'var(--muted)' }}>Loading reviews...</div>
+      ) : (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
+            {displayReviews.map((r, i) => (
+              <div key={i} style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
+                <div style={{ display: 'flex', gap: 2, marginBottom: 10 }}>
+                  {[1,2,3,4,5].map(s => (
+                    <svg key={s} width="12" height="12" viewBox="0 0 24 24" fill={s <= r.rating ? '#F2A07B' : 'none'} stroke="#F2A07B" strokeWidth="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  ))}
+                </div>
+                <p style={{ fontSize: 13, color: 'var(--charcoal)', lineHeight: 1.8, marginBottom: 12 }}>{r.comment}</p>
+                <div style={{ fontSize: 11, color: 'var(--muted)' }}>
+                  {r.users?.username || 'Anonymous'} · {new Date(r.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                </div>
+              </div>
+            ))}
+          </div>
+          {reviews.length === 0 && !loading && (
+            <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 16, textAlign: 'center' }}>
+              No reviews yet. Purchase this product and be the first to review it!
+            </p>
+          )}
+        </>
+      )}
+    </section>
+  )
+}
 function ProductDetail({ onAddToCart }) {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -1015,12 +1005,6 @@ function ProductDetail({ onAddToCart }) {
   if (!product) return <div style={{padding:48}}>Product not found. <button onClick={() => navigate('/catalogue')}>Back to shop</button></div>
 
   const related = PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0,4)
-
-  const reviews = [
-    { name:'Sarah A.', rating:5, text:'This has completely transformed my skin. I noticed a difference within two weeks.', date:'February 2026' },
-    { name:'Daniel L.', rating:4, text:'Really effective formula. Gentle enough for my sensitive skin and no irritation at all.', date:'January 2026' },
-    { name:'Maya K.', rating:5, text:'I was sceptical at first but this is genuinely the best product I have tried for my skin type.', date:'March 2026' },
-  ]
 
   return (
     <div>
@@ -1055,8 +1039,7 @@ function ProductDetail({ onAddToCart }) {
                 <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill={s<=4?'#F2A07B':'none'} stroke="#F2A07B" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               ))}
             </div>
-            <span style={{fontSize:12,color:'var(--muted)'}}>4.0 · {reviews.length} reviews</span>
-          </div>
+            <span style={{fontSize:12,color:'var(--muted)'}}>4.0 · verified reviews</span>          </div>
           <div className="detail-price">£{product.price}.00</div>
           <div className="detail-desc">{product.desc}</div>
           <div style={{fontSize:11,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--muted)',marginBottom:10}}>Suitable for</div>
@@ -1086,24 +1069,7 @@ function ProductDetail({ onAddToCart }) {
         </div>
       </div>
 
-      <section className="section" style={{borderTop:'1px solid var(--border)'}}>
-        <div className="section-header">
-          <h2 className="section-title">Customer Reviews</h2>
-        </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
-          {reviews.map((r,i) => (
-            <div key={i} style={{background:'var(--white)',border:'1px solid var(--border)',borderRadius:12,padding:24}}>
-              <div style={{display:'flex',gap:2,marginBottom:10}}>
-                {[1,2,3,4,5].map(s => (
-                  <svg key={s} width="12" height="12" viewBox="0 0 24 24" fill={s<=r.rating?'#F2A07B':'none'} stroke="#F2A07B" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                ))}
-              </div>
-              <p style={{fontSize:13,color:'var(--charcoal)',lineHeight:1.8,marginBottom:12}}>{r.text}</p>
-              <div style={{fontSize:11,color:'var(--muted)'}}>{r.name} · {r.date}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ProductReviews productId={product.id} />
 
       {related.length > 0 && (
         <section className="section" style={{borderTop:'1px solid var(--border)'}}>
@@ -2109,6 +2075,7 @@ function Profile({ userId }) {
   const [skinProfile, setSkinProfile] = useState(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [reviewForm, setReviewForm] = useState({ product_id: '', rating: 5, comment: '' })
+  const [orderedProducts, setOrderedProducts] = useState([])
   const [reviewSubmitted, setReviewSubmitted] = useState(false)
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterDone, setNewsletterDone] = useState(false)
@@ -2119,28 +2086,40 @@ function Profile({ userId }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!userId) { navigate('/login'); return }
-    async function load() {
-      // Load user info
-      const { data: userData } = await db
-        .from('users').select('*').eq('user_id', userId).single()
-      if (userData) {
-        setUser(userData)
-        setEditForm({ full_name: userData.username || '', email: userData.email || '' })
-        setNewsletterEmail(userData.email || '')
-      }
-      // Load orders
-      const { data: orderData } = await db
-        .from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-      if (orderData) setOrders(orderData)
-      // Load skin profile to check if quiz was taken
-      const { data: skinData } = await db
-        .from('skin_profile').select('*').eq('user_id', userId).single()
-      if (skinData) setSkinProfile(skinData)
-      setLoading(false)
+  if (!userId) { navigate('/login'); return }
+  async function load() {
+    const { data: userData } = await db
+      .from('users').select('*').eq('user_id', userId).single()
+    if (userData) {
+      setUser(userData)
+      setEditForm({ full_name: userData.username || '', email: userData.email || '' })
+      setNewsletterEmail(userData.email || '')
     }
-    load()
-  }, [userId])
+
+    const { data: orderData } = await db
+      .from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    if (orderData) setOrders(orderData)
+
+    const { data: skinData } = await db
+      .from('skin_profile').select('*').eq('user_id', userId).single()
+    if (skinData) setSkinProfile(skinData)
+
+    // Load products from user's orders
+    const { data: orderItemsData } = await db
+      .from('order_items')
+      .select('product_id')
+      .in('orders_id', orderData?.map(o => o.order_id) || [])
+
+    if (orderItemsData) {
+      const uniqueProductIds = [...new Set(orderItemsData.map(i => i.product_id))]
+      const purchasedProducts = PRODUCTS.filter(p => uniqueProductIds.includes(p.id))
+      setOrderedProducts(purchasedProducts)
+    }
+
+    setLoading(false)
+  }
+  load()
+}, [userId])
 
   async function handleSaveProfile() {
     await db.from('users').update({
@@ -2184,21 +2163,35 @@ function Profile({ userId }) {
   }
 
   async function handleReviewSubmit() {
-    if (!reviewForm.product_id) return
-    await db.from('reviews').insert({
-      user_id: userId,
-      product_id: parseInt(reviewForm.product_id),
-      rating: reviewForm.rating,
-      comment: reviewForm.comment,
-      created_at: new Date().toISOString()
-    })
-    setReviewSubmitted(true)
-    setTimeout(() => { setReviewSubmitted(false); setReviewForm({ product_id: '', rating: 5, comment: '' }) }, 3000)
+  if (!reviewForm.comment.trim() || reviewForm.comment.length < 10) return
+
+  const insertData = {
+    user_id: userId,
+    rating: reviewForm.rating,
+    comment: reviewForm.comment.trim(),
+    created_at: new Date().toISOString(),
+    product_id: reviewForm.review_type === 'product' ? parseInt(reviewForm.product_id) : null
   }
+
+  const { error } = await db.from('reviews').insert(insertData)
+
+  if (error) {
+    console.error('Review error:', error)
+    alert('Failed to submit review. Please try again.')
+    return
+  }
+
+  setReviewSubmitted(true)
+  setTimeout(() => {
+    setReviewSubmitted(false)
+    setReviewForm({ product_id: '', rating: 5, comment: '', review_type: 'brand' })
+    setOrderedProducts([])
+  }, 4000)
+}
 
   async function handleDeleteAccount() {
     await db.from('users').delete().eq('user_id', userId)
-    await db.auth.signOut()
+    await db.auth.delete()
     navigate('/')
   }
 
@@ -2387,51 +2380,152 @@ function Profile({ userId }) {
               </div>
             )}
           </div>
+        
         )}
 
-        {/* ── REVIEW TAB ── */}
-        {activeTab === 'review' && (
-          <div style={{ maxWidth: 600 }}>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 36, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 8 }}>Leave a Review</h2>
-            <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 32, lineHeight: 1.8 }}>Loved a product? Share your experience to help others find their formula.</p>
-            {reviewSubmitted ? (
-              <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 12, padding: 24, textAlign: 'center' }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>🌟</div>
-                <p style={{ color: '#166534', fontSize: 14 }}>Thank you for your review!</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20, background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 16, padding: 32 }}>
-                <div>
-                  <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Select Product</label>
-                  <select value={reviewForm.product_id} onChange={e => setReviewForm({ ...reviewForm, product_id: e.target.value })}
-                    style={{ width: '100%', padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--coconut)' }}>
-                    <option value="">Choose a product...</option>
-                    {PRODUCTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
+{activeTab === 'review' && (
+  <div style={{ maxWidth: 600 }}>
+    <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 36, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 8 }}>Leave a Review</h2>
+    <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 32, lineHeight: 1.8 }}>
+      Share your experience with Formula Me or review a product you've purchased.
+    </p>
+
+    {!userId ? (
+      <div style={{ background: 'var(--peach-light)', borderRadius: 12, padding: 24, textAlign: 'center' }}>
+        <p style={{ color: 'var(--charcoal)', marginBottom: 16 }}>You need to be signed in to leave a review.</p>
+        <button className="btn-primary" onClick={() => navigate('/login')}>Sign In</button>
+      </div>
+    ) : reviewSubmitted ? (
+      <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 12, padding: 24, textAlign: 'center' }}>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>🌟</div>
+        <p style={{ color: '#166534', fontSize: 14 }}>
+          {reviewForm.review_type === 'brand'
+            ? 'Thank you! Your brand review will appear on our homepage.'
+            : 'Thank you! Your product review will appear on the product page.'}
+        </p>
+      </div>
+    ) : (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+        {/* Review Type Toggle */}
+        <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+          <button
+            onClick={() => setReviewForm({ ...reviewForm, review_type: 'brand', product_id: '' })}
+            style={{
+              flex: 1, padding: '12px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13,
+              background: reviewForm.review_type === 'brand' ? 'var(--peach-light)' : 'transparent',
+              color: reviewForm.review_type === 'brand' ? 'var(--charcoal)' : 'var(--muted)',
+              fontWeight: reviewForm.review_type === 'brand' ? 500 : 400
+            }}>
+            🌸 Brand Review
+          </button>
+          <button
+            onClick={() => setReviewForm({ ...reviewForm, review_type: 'product' })}
+            style={{
+              flex: 1, padding: '12px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13,
+              background: reviewForm.review_type === 'product' ? 'var(--peach-light)' : 'transparent',
+              color: reviewForm.review_type === 'product' ? 'var(--charcoal)' : 'var(--muted)',
+              fontWeight: reviewForm.review_type === 'product' ? 500 : 400
+            }}>
+            🧴 Product Review
+          </button>
+        </div>
+
+        <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 16, padding: 32, display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* Product selector — only shown for product reviews */}
+          {reviewForm.review_type === 'product' && (
+            <div>
+              <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>
+                Select a Product You've Purchased
+              </label>
+              {orderedProducts.length === 0 ? (
+                <div style={{ background: 'var(--coconut)', borderRadius: 8, padding: '14px 16px', fontSize: 13, color: 'var(--muted)' }}>
+                  You haven't purchased any products yet.{' '}
+                  <span style={{ color: 'var(--peach)', cursor: 'pointer' }} onClick={() => navigate('/catalogue')}>
+                    Shop now →
+                  </span>
                 </div>
-                <div>
-                  <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Rating</label>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {[1, 2, 3, 4, 5].map(s => (
-                      <button key={s} onClick={() => setReviewForm({ ...reviewForm, rating: s })}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 28, padding: 0, opacity: s <= reviewForm.rating ? 1 : 0.3, transition: 'opacity .2s' }}>
-                        ★
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Your Review</label>
-                  <textarea value={reviewForm.comment} onChange={e => setReviewForm({ ...reviewForm, comment: e.target.value })}
-                    placeholder="Tell us about your experience with this product..."
-                    rows={4}
-                    style={{ width: '100%', padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--coconut)', resize: 'vertical' }} />
-                </div>
-                <button className="btn-primary" onClick={handleReviewSubmit} style={{ alignSelf: 'flex-start' }}>Submit Review</button>
-              </div>
-            )}
+              ) : (
+                <select
+                  value={reviewForm.product_id}
+                  onChange={e => setReviewForm({ ...reviewForm, product_id: e.target.value })}
+                  style={{ width: '100%', padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--coconut)' }}>
+                  <option value="">Choose a product you've ordered...</option>
+                  {orderedProducts.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+
+          {/* Brand review helper text */}
+          {reviewForm.review_type === 'brand' && (
+            <div style={{ background: 'var(--peach-light)', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: 'var(--charcoal)' }}>
+              💬 Brand reviews appear on our homepage carousel for all visitors to see.
+            </div>
+          )}
+
+          {/* Star Rating */}
+          <div>
+            <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Your Rating</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[1, 2, 3, 4, 5].map(s => (
+                <button
+                  key={s}
+                  onClick={() => setReviewForm({ ...reviewForm, rating: s })}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer', fontSize: 32, padding: 0,
+                    opacity: s <= reviewForm.rating ? 1 : 0.25,
+                    transition: 'opacity .2s, transform .2s',
+                    transform: s <= reviewForm.rating ? 'scale(1.1)' : 'scale(1)'
+                  }}>
+                  ★
+                </button>
+              ))}
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 6 }}>
+              {reviewForm.rating === 5 ? 'Excellent!' : reviewForm.rating === 4 ? 'Very Good' : reviewForm.rating === 3 ? 'Good' : reviewForm.rating === 2 ? 'Fair' : 'Poor'}
+            </p>
           </div>
-        )}
+
+          {/* Comment */}
+          <div>
+            <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>
+              {reviewForm.review_type === 'brand' ? 'Your Experience with Formula Me' : 'Your Product Review'}
+            </label>
+            <textarea
+              value={reviewForm.comment}
+              onChange={e => setReviewForm({ ...reviewForm, comment: e.target.value })}
+              placeholder={reviewForm.review_type === 'brand'
+                ? 'Tell us about your overall experience with Formula Me — your skin journey, favourite products, and results...'
+                : 'How has this product worked for your skin? Share your honest experience...'}
+              rows={5}
+              style={{ width: '100%', padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--coconut)', resize: 'vertical' }}
+            />
+            <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>{reviewForm.comment.length}/500 characters</p>
+          </div>
+
+          <button
+            className="btn-primary"
+            onClick={handleReviewSubmit}
+            disabled={
+              !reviewForm.comment.trim() ||
+              reviewForm.comment.length < 10 ||
+              (reviewForm.review_type === 'product' && !reviewForm.product_id)
+            }
+            style={{
+              alignSelf: 'flex-start',
+              opacity: (!reviewForm.comment.trim() || reviewForm.comment.length < 10 || (reviewForm.review_type === 'product' && !reviewForm.product_id)) ? 0.5 : 1
+            }}>
+            Submit Review
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+)}
 
         {/* ── SETTINGS TAB ── */}
         {activeTab === 'settings' && (
