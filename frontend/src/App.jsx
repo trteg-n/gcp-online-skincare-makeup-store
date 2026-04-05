@@ -265,13 +265,13 @@ function Footer({ userId }) {
                 <div className="newsletter-success">✓ Thanks! Check your email soon.</div>
               ) : (
                 <>
-                  <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
+                  <form onSubmit={handleNewsletterSubmit} className="newsletter-footer-form">
                     <input
                       type="email"
                       placeholder="your@email.com"
                       value={newsletterEmail}
                       onChange={(e) => setNewsletterEmail(e.target.value)}
-                      className="newsletter-input form-input"
+                      className="newsletter-input"
                       required
                       disabled={isSubmitting}
                     />
@@ -550,6 +550,12 @@ function Features() {
 
 function Home({ onAddToCart, userId }) {
   const navigate = useNavigate()
+  const location = useLocation()
+  
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+  
   const featured = PRODUCTS.slice(0, 4)
   const cats = [
     { name:'Serums', img:'/images/serum-1.jpg', bg:'#FDE8D8' },
@@ -996,6 +1002,12 @@ function Catalogue({ onAddToCart }) {
 function ProductDetail({ onAddToCart }) {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+
   const product = PRODUCTS.find(p => p.id === parseInt(id))
   const [qty, setQty] = useState(1)
   const [activeImg, setActiveImg] = useState(0)
@@ -1110,6 +1122,12 @@ function ProductDetail({ onAddToCart }) {
 
 function Cart({ cart, onRemove }) {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+
   const total = cart.reduce((sum, item) => sum + item.price, 0)
   const grouped = cart.reduce((acc, item) => {
     acc[item.id] = acc[item.id] || { ...item, qty: 0 }
@@ -1172,6 +1190,12 @@ function Cart({ cart, onRemove }) {
 
 function Checkout({ cart, onClearCart, userId }) {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+
   const [form, setForm] = useState({ name:'', email:'', address:'', city:'', postcode:'', card:'', expiry:'', cvv:'' })
   const [errors, setErrors] = useState({})
   const [placed, setPlaced] = useState(false)
@@ -1444,6 +1468,12 @@ function Checkout({ cart, onClearCart, userId }) {
 
 function SkinQuiz({ userId }) {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState({})
   const [result, setResult] = useState(null)
@@ -1832,6 +1862,12 @@ function About() {
 
 function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+
   const [isLogin, setIsLogin] = useState(true)
   const [form, setForm] = useState({ name:'', email:'', password:'' })
   const [errors, setErrors] = useState({})
@@ -2062,6 +2098,12 @@ function SkinProfileCard({ userId }) {
 
 function Profile({ userId }) {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+
   const [user, setUser] = useState(null)
   const [orders, setOrders] = useState([])
   const [skinProfile, setSkinProfile] = useState(null)
@@ -2460,6 +2502,12 @@ function Profile({ userId }) {
 }
 function Sustainability() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+
   const [activeTab, setActiveTab] = useState('packaging')
   const [progress, setProgress] = useState(0)
 
@@ -2630,13 +2678,19 @@ function Sustainability() {
         <button className="btn-primary" onClick={() => navigate('/catalogue')} style={{background:'white', color:'#F472B6'}}>Shop Sustainably</button>
       </section>
 
-      <Footer/>
+      <Footer />
     </div>
   )
 }
 
 function Contact() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [submitted, setSubmitted] = useState(false)
   const [activeFAQ, setActiveFAQ] = useState(null)
@@ -2761,6 +2815,12 @@ function Contact() {
 
 function Shipping() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+
   const [selectedCountry, setSelectedCountry] = useState('UK')
   const [showCalculator, setShowCalculator] = useState(false)
 
@@ -2882,6 +2942,12 @@ function Shipping() {
 
 function Returns() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+
   const [step, setStep] = useState(1)
   const [selectedReason, setSelectedReason] = useState('')
 
@@ -3030,6 +3096,12 @@ function Returns() {
 
 function FAQ() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+
   const [searchTerm, setSearchTerm] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
   const [expandedItems, setExpandedItems] = useState(new Set())
