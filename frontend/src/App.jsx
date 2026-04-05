@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { BrowserRouter, Routes, Route, Link, useNavigate, useParams, useLocation } from 'react-router-dom'
+import { motion, useScroll, useTransform } from "framer-motion";
+import { Sparkles, Leaf, TestTube } from 'lucide-react';
 import './App.css'
 import { db } from './supabase.js'
 
@@ -269,13 +271,20 @@ function Footer({ userId }) {
                       placeholder="your@email.com"
                       value={newsletterEmail}
                       onChange={(e) => setNewsletterEmail(e.target.value)}
-                      className="newsletter-input"
+                      className="newsletter-input form-input"
                       required
                       disabled={isSubmitting}
                     />
-                    <button type="submit" className="newsletter-btn" disabled={isSubmitting}>
+                    <motion.button
+                      type="submit"
+                      className="newsletter-btn"
+                      disabled={isSubmitting}
+                      whileHover={{ scale: 1.05, backgroundColor: 'var(--peach)' }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                    >
                       {isSubmitting ? 'Subscribing...' : 'Subscribe'}
-                    </button>
+                    </motion.button>
                   </form>
                   {newsletterError && (
                     <div style={{ background: '#FEE2E2', border: '1px solid #FECACA', borderRadius: 6, padding: '10px 12px', fontSize: 12, color: '#DC2626', marginTop: 8 }}>
@@ -289,32 +298,129 @@ function Footer({ userId }) {
 
           <div className="footer-section">
             <div className="footer-col-title">Company</div>
-            <span className="footer-link" onClick={() => navigate('/about')}>About Us</span>
-            <span className="footer-link" onClick={() => navigate('/sustainability')}>Sustainability</span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/about')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              About Us
+            </motion.span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/sustainability')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              Sustainability
+            </motion.span>
           </div>
 
           <div className="footer-section">
             <div className="footer-col-title">Help</div>
-            <span className="footer-link" onClick={() => navigate('/contact')}>Contact Us</span>
-            <span className="footer-link" onClick={() => navigate('/shipping')}>Shipping Info</span>
-            <span className="footer-link" onClick={() => navigate('/returns')}>Returns & Exchanges</span>
-            <span className="footer-link" onClick={() => navigate('/faq')}>FAQ</span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/contact')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              Contact Us
+            </motion.span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/shipping')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              Shipping Info
+            </motion.span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/returns')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              Returns & Exchanges
+            </motion.span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/faq')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              FAQ
+            </motion.span>
           </div>
 
           <div className="footer-section">
             <div className="footer-col-title">Account</div>
-            <span className="footer-link" onClick={() => navigate('/login')}>Sign In</span>
-            <span className="footer-link" onClick={() => navigate('/profile')}>My Account</span>
-            <span className="footer-link">Order History</span>
-            <span className="footer-link" onClick={() => navigate('/quiz')}>Skin Quiz</span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/login')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              Sign In
+            </motion.span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/profile')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              My Account
+            </motion.span>
+            <motion.span
+              className="footer-link"
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              Order History
+            </motion.span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/quiz')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              Skin Quiz
+            </motion.span>
           </div>
 
           <div className="footer-section">
             <div className="footer-col-title">Shop</div>
-            <span className="footer-link" onClick={() => navigate('/catalogue')}>All Products</span>
-            <span className="footer-link" onClick={() => navigate('/catalogue')}>Skincare</span>
-            <span className="footer-link" onClick={() => navigate('/catalogue')}>Makeup</span>
-            <span className="footer-link" onClick={() => navigate('/catalogue')}>SPF</span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/catalogue')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              All Products
+            </motion.span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/catalogue')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              Skincare
+            </motion.span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/catalogue')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              Makeup
+            </motion.span>
+            <motion.span
+              className="footer-link"
+              onClick={() => navigate('/catalogue')}
+              whileHover={{ x: 5, color: 'var(--peach)' }}
+              transition={{ duration: 0.2 }}
+            >
+              SPF
+            </motion.span>
           </div>
         </div>
       </footer>
@@ -355,7 +461,91 @@ function ProductCard({ product, onAddToCart }) {
         </div>
       </div>
     </div>
-  )
+)}
+
+const features = [
+  {
+    icon: Sparkles,
+    title: 'Radiant Results',
+    description: 'Clinically proven formulas that deliver visible results in just weeks',
+    color: '#F472B6',
+  },
+  {
+    icon: Leaf,
+    title: 'Natural Ingredients',
+    description: 'Sustainably sourced botanicals that nourish your skin naturally',
+    color: '#F2A07B',
+  },
+  {
+    icon: TestTube,
+    title: 'Science-Backed',
+    description: 'Innovative research meets nature for optimal skincare solutions',
+    color: '#C4B5FD',
+  },
+];
+
+function Features() {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+
+  const yTop = useTransform(scrollYProgress, [0, 1], [40, -40]);
+  const yBottom = useTransform(scrollYProgress, [0, 1], [-40, 40]);
+
+  return (
+    <section ref={containerRef} className="features-section">
+      <motion.div
+        style={{ y: yTop }}
+        className="feature-bg feature-bg--top"
+      />
+      <motion.div
+        style={{ y: yBottom }}
+        className="feature-bg feature-bg--bottom"
+      />
+
+      <div className="features-inner">
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true, margin: "-120px" }}
+          transition={{ duration: 0.8 }}
+          className="features-header"
+        >
+          <h2 className="features-title">Why Choose Us</h2>
+          <p className="features-subtitle">Premium quality meets sustainable beauty</p>
+        </motion.div>
+
+        <div className="features-grid">
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <motion.div
+                key={index}
+                initial={{ y: 80, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.6, delay: index * 0.15 }}
+                className="feature-card"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 360 }}
+                  transition={{ duration: 0.6 }}
+                  className="feature-icon"
+                  style={{ boxShadow: `0 18px 50px ${feature.color}30` }}
+                >
+                  <Icon className="feature-icon-svg" style={{ color: feature.color }} />
+                </motion.div>
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-description">{feature.description}</p>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function Home({ onAddToCart, userId }) {
@@ -367,60 +557,189 @@ function Home({ onAddToCart, userId }) {
     { name:'Makeup', img:'/images/makeup-1.jpg', bg:'#EDE9FE' },
     { name:'Sun Care', img:'/images/spf-1.jpg', bg:'#FEF9C3' },
   ]
+
   return (
     <div>
       <section className="hero">
-        <div className="hero-text">
-          <p className="hero-eyebrow">New Collection · Spring 2026</p>
-          <h1 className="hero-title">Your skin,<br/><em>your formula</em></h1>
-          <p className="hero-sub">Makeup engineered to work with your skincare — never against it. Personalised for every skin type and concern.</p>
-          <div className="hero-btns">
-            <button className="btn-primary" onClick={() => navigate('/catalogue')}>Shop Now</button>
-            <button className="btn-outline" onClick={() => navigate('/quiz')}>Take Skin Quiz</button>
-          </div>
-        </div>
-        <div className="hero-visual">
-          {PRODUCTS.slice(0,3).map(p => (
-            <div key={p.id} className="hero-card" onClick={() => navigate(`/product/${p.id}`)} style={{cursor:'pointer'}}>
-              <img src={p.images[0]} alt={p.name} style={{width:48,height:48,objectFit:'cover',borderRadius:8}}/>
+        <motion.div
+          className="hero-text"
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          <motion.p
+            className="hero-eyebrow"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            New Collection · Spring 2026
+          </motion.p>
+          <motion.h1
+            className="hero-title"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            Your skin,<br/><em>your formula</em>
+          </motion.h1>
+          <motion.p
+            className="hero-sub"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            Makeup engineered to work with your skincare — never against it. Personalised for every skin type and concern.
+          </motion.p>
+          <motion.div
+            className="hero-btns"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+          >
+            <motion.button
+              className="btn-primary"
+              onClick={() => navigate('/catalogue')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Shop Now
+            </motion.button>
+            <motion.button
+              className="btn-outline"
+              onClick={() => navigate('/quiz')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Take Skin Quiz
+            </motion.button>
+          </motion.div>
+        </motion.div>
+        <motion.div
+          className="hero-visual"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+        >
+          {PRODUCTS.slice(0,3).map((p, index) => (
+            <motion.div
+              key={p.id}
+              className="hero-card"
+              onClick={() => navigate(`/product/${p.id}`)}
+              style={{cursor:'pointer'}}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
+              whileHover={{
+                scale: 1.05,
+                y: -5,
+                transition: { duration: 0.2 }
+              }}
+            >
+              <motion.img
+                src={p.images[0]}
+                alt={p.name}
+                style={{width:48,height:48,objectFit:'cover',borderRadius:8}}
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.3 }}
+              />
               <span className="hero-card-name">{p.name}</span>
               <span className="hero-card-price">£{p.price}.00</span>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
-      <section className="section">
+      <motion.section
+        className="section"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8 }}
+      >
         <div className="section-header">
           <h2 className="section-title">Featured Products</h2>
           <span className="section-link" onClick={() => navigate('/catalogue')}>View all 20 products</span>
         </div>
         <div className="product-grid">
-          {featured.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} />)}
+          {featured.map((p, index) => (
+            <motion.div
+              key={p.id}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+            >
+              <ProductCard product={p} onAddToCart={onAddToCart} />
+            </motion.div>
+          ))}
         </div>
-      </section>
+      </motion.section>
 
-      <section className="section" style={{paddingTop:0}}>
+      <Features />
+
+      <motion.section
+        className="section"
+        style={{paddingTop:0}}
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8 }}
+      >
         <div className="section-header">
           <h2 className="section-title">Shop by Category</h2>
         </div>
         <div className="category-grid">
-          {cats.map(c => (
-            <div key={c.name} className="cat-tile" style={{background:c.bg,overflow:'hidden',position:'relative'}}
-              onClick={() => navigate('/catalogue')}>
-              <img src={c.img} alt={c.name} style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:0.55}}/>
+          {cats.map((c, index) => (
+            <motion.div
+              key={c.name}
+              className="cat-tile"
+              style={{background:c.bg,overflow:'hidden',position:'relative'}}
+              onClick={() => navigate('/catalogue')}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              whileHover={{
+                scale: 1.05,
+                y: -5,
+                transition: { duration: 0.2 }
+              }}
+            >
+              <motion.img
+                src={c.img}
+                alt={c.name}
+                style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:0.55}}
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.3 }}
+              />
               <span className="cat-tile-name" style={{position:'relative',zIndex:1,fontWeight:600}}>{c.name}</span>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
-      <section className="section" style={{background: 'var(--coconut)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)'}}>
+      <motion.section
+        className="section"
+        style={{background: 'var(--coconut)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)'}}
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8 }}
+      >
         <div className="section-header">
-          <h2 className="section-title">What Our Customers Say</h2>
+          <motion.h2
+            className="section-title"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            What Our Customers Say
+          </motion.h2>
         </div>
         <CustomerReviewsCarousel />
-      </section>
+      </motion.section>
 
       <Footer userId={userId} />
     </div>
@@ -485,31 +804,101 @@ function CustomerReviewsCarousel() {
   const prevReview = () => setCurrentReview(prev => (prev - 1 + reviews.length) % reviews.length)
 
   return (
-    <div className="reviews-carousel">
-      <div className="review-card">
-        <div className="review-stars">
+    <motion.div
+      className="reviews-carousel"
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+    >
+      <motion.div
+        className="review-card"
+        key={currentReview}
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -50 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div
+          className="review-stars"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
           {[1,2,3,4,5].map(s => (
-            <svg key={s} width="16" height="16" viewBox="0 0 24 24" fill={s <= reviews[currentReview].rating ? '#F2A07B' : 'none'} stroke="#F2A07B" strokeWidth="2">
+            <motion.svg
+              key={s}
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill={s <= reviews[currentReview].rating ? '#F2A07B' : 'none'}
+              stroke="#F2A07B"
+              strokeWidth="2"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.3, delay: 0.3 + s * 0.1 }}
+            >
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-            </svg>
+            </motion.svg>
           ))}
-        </div>
-        <blockquote className="review-text">"{reviews[currentReview].text}"</blockquote>
-        <div className="review-author">
+        </motion.div>
+        <motion.blockquote
+          className="review-text"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          "{reviews[currentReview].text}"
+        </motion.blockquote>
+        <motion.div
+          className="review-author"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
           <div className="review-name">{reviews[currentReview].name}</div>
           <div className="review-meta">{reviews[currentReview].location} · {reviews[currentReview].skinType}</div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
       <div className="carousel-controls">
-        <button className="carousel-btn" onClick={prevReview}>‹</button>
+        <motion.button
+          className="carousel-btn"
+          onClick={prevReview}
+          whileHover={{ scale: 1.1, backgroundColor: 'rgba(242, 160, 123, 0.1)' }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.8 }}
+        >
+          ‹
+        </motion.button>
         <div className="carousel-dots">
           {reviews.map((_, i) => (
-            <span key={i} className={`dot ${i === currentReview ? 'active' : ''}`} onClick={() => setCurrentReview(i)}></span>
+            <motion.span
+              key={i}
+              className={`dot ${i === currentReview ? 'active' : ''}`}
+              onClick={() => setCurrentReview(i)}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: 1 + i * 0.1 }}
+            ></motion.span>
           ))}
         </div>
-        <button className="carousel-btn" onClick={nextReview}>›</button>
+        <motion.button
+          className="carousel-btn"
+          onClick={nextReview}
+          whileHover={{ scale: 1.1, backgroundColor: 'rgba(242, 160, 123, 0.1)' }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.8 }}
+        >
+          ›
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -519,6 +908,11 @@ function Catalogue({ onAddToCart }) {
   const [minPrice, setMinPrice] = useState(0)
   const [maxPrice, setMaxPrice] = useState(100)
   const [sortBy, setSortBy] = useState('newest')
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
 
   const filtered = PRODUCTS.filter(p =>
     (activeCategory === 'All' || p.category === activeCategory) &&
@@ -783,7 +1177,64 @@ function Checkout({ cart, onClearCart, userId }) {
   const [placed, setPlaced] = useState(false)
   const total = cart.reduce((sum, item) => sum + item.price, 0)
   const [loading, setLoading] = useState(false)
+  const [couponCode, setCouponCode] = useState('')
+  const [discount, setDiscount] = useState(0)
+  const [couponError, setCouponError] = useState('')
 
+ async function applyCoupon() {
+  const code = couponCode.toUpperCase().trim()
+  setCouponError('')
+  setDiscount(0)
+
+  if (!code) {
+    setCouponError('Please enter a coupon code')
+    return
+  }
+
+  try {
+    const { data, error } = await db
+      .from('coupons')
+      .select('*')
+      .eq('coupon_code', code)
+      .single()
+
+    if (error || !data) {
+      setCouponError('Invalid coupon code')
+      return
+    }
+
+    if (new Date(data.valid_until) < new Date()) {
+      setCouponError('This coupon has expired')
+      return
+    }
+
+    if (data.used_count >= data.max_usage) {
+      setCouponError('This coupon has reached its usage limit')
+      return
+    }
+
+    if (total < data.min_value) {
+      setCouponError(`Minimum order value for this coupon is £${data.min_value}`)
+      return
+    }
+
+    if (data.max_value && total > data.max_value) {
+      setCouponError(`This coupon is only valid on orders up to £${data.max_value}`)
+      return
+    }
+
+    const discountAmount = Math.round((total * data.discount / 100) * 100) / 100
+    setDiscount(discountAmount)
+
+    await db.from('coupons')
+      .update({ used_count: data.used_count + 1 })
+      .eq('coupon_id', data.coupon_id)
+
+  } catch (err) {
+    console.error('Error applying coupon:', err)
+    setCouponError('Error applying coupon. Please try again.')
+  }
+}
   function validate() {
     const e = {}
     if (!form.name.trim()) e.name = 'Required'
@@ -802,16 +1253,19 @@ function Checkout({ cart, onClearCart, userId }) {
     if (Object.keys(e).length !== 0) return
     setLoading(true)
 
-    const total = cart.reduce((sum, item) => sum + item.price, 0)
-    const deliveryCost = total >= 40 ? 0 : 3.99
-    const finalTotal = total + deliveryCost
+    const subtotal = cart.reduce((sum, item) => sum + item.price, 0)
+    const deliveryCost = subtotal >= 40 ? 0 : 3.99
+    const discountedSubtotal = subtotal - discount
+    const finalTotal = Math.max(0, discountedSubtotal + deliveryCost)
 
     // 1 — Save order
     const { data: orderData, error: orderError } = await db
       .from('orders').insert({
         user_id: userId || null,
         total: finalTotal,
-        subtotal_total: total,
+        subtotal_total: subtotal,
+        discount_amount: discount,
+        coupon_code: discount > 0 ? couponCode.toUpperCase() : null,
         status: 'confirmed',
         address: `${form.address}, ${form.city}, ${form.postcode}`,
         phone_number: null,
@@ -916,11 +1370,65 @@ function Checkout({ cart, onClearCart, userId }) {
             ))}
             {cart.length > 3 && <div style={{fontSize:11,color:'var(--muted)',marginBottom:8}}>+{cart.length-3} more items</div>}
             <div style={{height:1,background:'var(--border)',margin:'16px 0'}}/>
+
+            {/* Coupon Code Section */}
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>Have a coupon?</div>
+              <div style={{display:'flex',gap:8}}>
+                <input
+                  type="text"
+                  placeholder="Enter coupon code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  style={{
+                    flex:1,
+                    padding:'8px 12px',
+                    border:`1px solid ${couponError ? '#EF4444' : 'var(--border)'}`,
+                    borderRadius:6,
+                    fontSize:12,
+                    fontFamily:'inherit',
+                    outline:'none',
+                    background:'var(--coconut)'
+                  }}
+                />
+                <button
+                  onClick={applyCoupon}
+                  style={{
+                    padding:'8px 16px',
+                    background:'var(--charcoal)',
+                    color:'white',
+                    border:'none',
+                    borderRadius:6,
+                    fontSize:12,
+                    fontWeight:500,
+                    cursor:'pointer'
+                  }}
+                >
+                  Apply
+                </button>
+              </div>
+              {couponError && <p style={{color:'#EF4444',fontSize:11,marginTop:4}}>{couponError}</p>}
+              {discount > 0 && <p style={{color:'#10B981',fontSize:11,marginTop:4}}>Coupon applied! £{discount.toFixed(2)} discount</p>}
+            </div>
+
+            <div style={{height:1,background:'var(--border)',margin:'16px 0'}}/>
+            <div style={{display:'flex',justifyContent:'space-between',fontSize:14,color:'var(--muted)',marginBottom:8}}>
+              <span>Subtotal</span><span>£{total.toFixed(2)}</span>
+            </div>
+            {discount > 0 && (
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:14,color:'#10B981',marginBottom:8}}>
+                <span>Discount ({couponCode.toUpperCase()})</span><span>-£{discount.toFixed(2)}</span>
+              </div>
+            )}
             <div style={{display:'flex',justifyContent:'space-between',fontSize:14,color:'var(--muted)',marginBottom:8}}>
               <span>Delivery</span><span>{total >= 40 ? 'Free' : '£3.99'}</span>
             </div>
             <div style={{display:'flex',justifyContent:'space-between',fontSize:17,fontWeight:600,color:'var(--charcoal)',marginBottom:20}}>
-              <span>Total</span><span>£{(total >= 40 ? total : total + 3.99).toFixed(2)}</span>
+              <span>Total</span><span>£{(() => {
+                const subtotal = total - discount
+                const deliveryCost = total >= 40 ? 0 : 3.99
+                return Math.max(0, subtotal + deliveryCost).toFixed(2)
+              })()}</span>
             </div>
             <button className="btn-primary" style={{width:'100%',justifyContent:'center'}} onClick={handlePlace}>
               Place Order
@@ -1234,6 +1742,12 @@ function SkinQuiz({ userId }) {
 
 function About() {
   const navigate = useNavigate()
+  const location = useLocation()
+  
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+  
   return (
     <div>
       <section style={{background:'linear-gradient(135deg,#FDE8D8,#FCE7F3)',padding:'100px 48px',textAlign:'center'}}>
@@ -1550,6 +2064,7 @@ function Profile({ userId }) {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [orders, setOrders] = useState([])
+  const [skinProfile, setSkinProfile] = useState(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [reviewForm, setReviewForm] = useState({ product_id: '', rating: 5, comment: '' })
   const [reviewSubmitted, setReviewSubmitted] = useState(false)
@@ -1576,6 +2091,10 @@ function Profile({ userId }) {
       const { data: orderData } = await db
         .from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false })
       if (orderData) setOrders(orderData)
+      // Load skin profile to check if quiz was taken
+      const { data: skinData } = await db
+        .from('skin_profile').select('*').eq('user_id', userId).single()
+      if (skinData) setSkinProfile(skinData)
       setLoading(false)
     }
     load()
@@ -1725,18 +2244,20 @@ function Profile({ userId }) {
               ))}
             </div>
             <SkinProfileCard userId={userId} />
-            {/* Product Recommendation */}
-            <div style={{ background: 'linear-gradient(135deg, #FDE8D8, #FCE7F3)', borderRadius: 16, padding: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
-              <div>
-                <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 28, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 8 }}>
-                  Find your perfect formula ✨
-                </h3>
-                <p style={{ fontSize: 13, color: 'var(--muted)', maxWidth: 400, lineHeight: 1.8 }}>
-                  Answer 4 quick questions and get personalised product recommendations matched to your skin type and concerns.
-                </p>
+            {/* Product Recommendation - Show only if quiz hasn't been taken */}
+            {!skinProfile && (
+              <div style={{ background: 'linear-gradient(135deg, #FDE8D8, #FCE7F3)', borderRadius: 16, padding: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+                <div>
+                  <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 28, fontWeight: 300, color: 'var(--charcoal)', marginBottom: 8 }}>
+                    Find your perfect formula ✨
+                  </h3>
+                  <p style={{ fontSize: 13, color: 'var(--muted)', maxWidth: 400, lineHeight: 1.8 }}>
+                    Answer 10 quick questions and get personalised product recommendations matched to your skin type and concerns.
+                  </p>
+                </div>
+                <button className="btn-primary" onClick={() => navigate('/quiz')}>Take Skin Quiz</button>
               </div>
-              <button className="btn-primary" onClick={() => navigate('/quiz')}>Take Skin Quiz</button>
-            </div>
+            )}
 
             {/* Newsletter */}
             <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 16, padding: 32 }}>
@@ -2625,7 +3146,6 @@ function FAQ() {
                   color: activeCategory === cat.id ? cat.color : '#666', fontSize:14, fontWeight: activeCategory === cat.id ? 600 : 400,
                   cursor:'pointer', transition:'all .3s', whiteSpace:'nowrap', flexShrink:0
                 }}>
-                {cat.label}
               </button>
             ))}
           </div>
@@ -2679,7 +3199,6 @@ function FAQ() {
 
 export default function App() {
   const [cart, setCart] = useState([])
-  const [toast, setToast] = useState(null)
   const [userId, setUserId] = useState(null)
   const [showNewsletter, setShowNewsletter] = useState(false)
 
@@ -2745,8 +3264,6 @@ export default function App() {
   // ── Add to cart ──
   async function addToCart(product) {
     setCart(c => [...c, product])
-    setToast(`${product.name} added to cart`)
-    setTimeout(() => setToast(null), 2500)
 
     if (userId) {
       // Get or create cart for user
@@ -2808,7 +3325,6 @@ export default function App() {
 
         if (existing && existing.quantity > 1) {
           await db.from('cart_item')
-            .update({ quantity: existing.quantity - 1 })
             .eq('cart_item_id', existing.cart_item_id)
         } else {
           await db.from('cart_item')
@@ -2822,7 +3338,24 @@ export default function App() {
     }
   }
 
-  function clearCart() { setCart([]) }
+  function clearCart() {
+    setCart([])
+    if (userId) {
+      // Clear cart from database for logged-in users
+      db.from('cart')
+        .select('cart_id')
+        .eq('user_id', userId)
+        .single()
+        .then(({ data: cartData }) => {
+          if (cartData) {
+            db.from('cart_item')
+              .delete()
+              .eq('cart_id', cartData.cart_id)
+          }
+        })
+        .catch(err => console.error('Failed to clear cart from database:', err))
+    }
+  }
 
   return (
     <BrowserRouter>
@@ -2844,7 +3377,6 @@ export default function App() {
         <Route path="/checkout" element={<Checkout cart={cart} onClearCart={clearCart} userId={userId}/>}/>
         <Route path="/profile" element={<Profile userId={userId}/>}/>
       </Routes>
-      {toast && <div className="toast">{toast}</div>}
       <NewsletterPopup
         isOpen={showNewsletter}
         onClose={() => setShowNewsletter(false)}
