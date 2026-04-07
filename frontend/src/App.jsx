@@ -1084,11 +1084,11 @@ function Cart({ cart, onRemove, setCart }) {
                 <span>Subtotal</span><span>£{total.toFixed(2)}</span>
               </div>
               <div style={{display:'flex',justifyContent:'space-between',marginBottom:12,fontSize:14,color:'var(--muted)'}}>
-                <span>Delivery</span><span>{total >= 40 ? 'Free' : '£3.99'}</span>
+                <span>Delivery</span><span>{total >= 40 ? 'Free' : '£5.99'}</span>
               </div>
               <div style={{height:1,background:'var(--border)',margin:'16px 0'}}/>
               <div style={{display:'flex',justifyContent:'space-between',marginBottom:20,fontSize:18,fontWeight:600,color:'var(--charcoal)'}}>
-                <span>Total</span><span>£{(total >= 40 ? total : total + 3.99).toFixed(2)}</span>
+                <span>Total</span><span>£{(total >= 40 ? total : total + 5.99).toFixed(2)}</span>
               </div>
               <button className="btn-primary" style={{width:'100%',justifyContent:'center'}} onClick={() => navigate('/checkout')}>
                 Proceed to Checkout
@@ -1122,7 +1122,9 @@ function Checkout({ cart, onClearCart, userId }) {
     window.scrollTo(0, 0)
   }, [location])
 
-  const [form, setForm] = useState({ name:'', email:'', address:'', city:'', postcode:'', card:'', expiry:'', cvv:'' })
+  const [form, setForm] = useState({ name:'', email:'', address:'', city:'', postcode:'' })
+  const [paymentMethod, setPaymentMethod] = useState(null) // 'cod' or 'card'
+  const [cardExpanded, setCardExpanded] = useState(false)
   const [errors, setErrors] = useState({})
   const [placed, setPlaced] = useState(false)
   const total = cart.reduce((sum, item) => sum + item.price, 0)
@@ -1188,13 +1190,13 @@ function Checkout({ cart, onClearCart, userId }) {
   function validate() {
     const e = {}
     if (!form.name.trim()) e.name = 'Required'
+    if (!form.phone.trim() || form.phone.trim().length !== 10) e.phone = 'Required'
     if (!form.email.includes('@')) e.email = 'Enter a valid email'
     if (!form.address.trim()) e.address = 'Required'
     if (!form.city.trim()) e.city = 'Required'
     if (form.postcode.length < 4) e.postcode = 'Enter a valid postcode'
-    if (form.card.replace(/\s/g,'').length < 16) e.card = 'Enter a valid 16-digit card number'
-    if (!form.expiry.match(/^\d{2}\/\d{2}$/)) e.expiry = 'Format: MM/YY'
-    if (form.cvv.length < 3) e.cvv = 'Enter a valid CVV'
+    if (!paymentMethod) e.payment = 'Please select a payment method'
+    if (paymentMethod === 'card') e.payment = 'Card payment is not currently supported'
     return e
   }
   async function handlePlace() {
@@ -1204,21 +1206,21 @@ function Checkout({ cart, onClearCart, userId }) {
     setLoading(true)
 
     const subtotal = cart.reduce((sum, item) => sum + item.price, 0)
-    const deliveryCost = subtotal >= 40 ? 0 : 3.99
+    const deliveryCost = subtotal >= 40 ? 0 : 5.99
     const discountedSubtotal = subtotal - discount
     const finalTotal = Math.max(0, discountedSubtotal + deliveryCost)
 
-    // 1 — Save order
+    // 1 — Save orders
     const { data: orderData, error: orderError } = await db
-      .from('orders').insert({
+    
+    .from('orders').insert({
         user_id: userId || null,
+        name: form.name,
         total: finalTotal,
         subtotal_total: subtotal,
-        discount_amount: discount,
-        coupon_code: discount > 0 ? couponCode.toUpperCase() : null,
         status: 'confirmed',
         address: `${form.address}, ${form.city}, ${form.postcode}`,
-        phone_number: null,
+        mobile_number: form.phone, // Set to true if cash on delivery, false otherwise
         created_at: new Date().toISOString()
       }).select().single()
 
@@ -1227,27 +1229,7 @@ function Checkout({ cart, onClearCart, userId }) {
       alert('Order failed: ' + orderError.message)
       return
     }
-
-    // 2 — Save order items
-    const orderItems = cart.map(item => ({
-      orders_id: orderData.order_id,
-      product_id: item.id,
-      quantity: 1,
-      unit_price: item.price
-    }))
-    await db.from('order_items').insert(orderItems)
-
-    // 3 — Save address if logged in
-    if (userId) {
-      await db.from('addresses').insert({
-        user_id: userId,
-        address_text: form.address,
-        city: form.city,
-        state: '',
-        postal_code: form.postcode,
-        country: 'UK'
-      })
-    }
+    
 
     setLoading(false)
     setPlaced(true)
@@ -1267,13 +1249,19 @@ function Checkout({ cart, onClearCart, userId }) {
   }
 
   if (placed) return (
-    <div style={{minHeight:'80vh',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16,textAlign:'center',padding:48}}>
-      <div style={{width:64,height:64,borderRadius:'50%',background:'var(--peach-light)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <svg width="28" height="28" fill="none" stroke="var(--peach)" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    <div style={{minHeight:'80vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:16,padding:48,textAlign:'center'}}>
+      <div style={{width:64,height:64,borderRadius:'50%',background:'var(--peach-light)',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:8}}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--peach)" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:40,fontWeight:300}}>Order Confirmed</h2>
-      <p style={{color:'var(--muted)',maxWidth:400,lineHeight:1.8}}>Thank you for your order. A confirmation has been sent to {form.email}. Your products will arrive within 3-5 working days.</p>
-      <button className="btn-primary" onClick={() => navigate('/')}>Back to Home</button>
+      <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:48,fontWeight:300,color:'var(--charcoal)'}}>Order Confirmed</h2>
+      <p style={{color:'var(--muted)',fontSize:15,maxWidth:400,lineHeight:1.8}}>
+        Thank you, {form.firstName}. Your order <strong>{orderNum}</strong> has been placed successfully.
+      </p>
+      <p style={{color:'var(--muted)',fontSize:13}}>A confirmation will be sent to {form.email}</p>
+      <div style={{display:'flex',gap:12,marginTop:20}}>
+        <button className="btn-primary" onClick={() => navigate('/tracking')}>Track Order</button>
+        <button className="btn-outline" style={{color:'var(--charcoal)',borderColor:'var(--charcoal)'}} onClick={() => navigate('/')}>Back to Home</button>
+      </div>
     </div>
   )
 
@@ -1289,7 +1277,8 @@ function Checkout({ cart, onClearCart, userId }) {
           <div style={{marginBottom:28}}>
             <div style={{fontSize:12,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--muted)',marginBottom:16}}>Delivery Information</div>
             <div style={{display:'flex',flexDirection:'column',gap:14}}>
-              {field('Full Name','name','Your full name')}
+               {field('Full Name','name','Your full name')}
+               {field('Mobile Number','phone','+44 7700 000000')}
               {field('Email Address','email','you@email.com','email')}
               {field('Street Address','address','123 Skin Street')}
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
@@ -1299,16 +1288,88 @@ function Checkout({ cart, onClearCart, userId }) {
             </div>
           </div>
           <div>
-            <div style={{fontSize:12,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--muted)',marginBottom:16}}>Payment Details</div>
-            <div style={{display:'flex',flexDirection:'column',gap:14}}>
-              {field('Card Number','card','1234 5678 9012 3456')}
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-                {field('Expiry','expiry','MM/YY')}
-                {field('CVV','cvv','123')}
-              </div>
+  <div style={{fontSize:12,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--muted)',marginBottom:16}}>Payment Method</div>
+  <div style={{display:'flex',flexDirection:'column',gap:12}}>
+
+    {/* COD Option */}
+    <div
+      onClick={() => { setPaymentMethod('cod'); setCardExpanded(false) }}
+      style={{
+        display:'flex', alignItems:'center', gap:16,
+        padding:'16px 20px',
+        border:`2px solid ${paymentMethod==='cod' ? 'var(--peach)' : 'var(--border)'}`,
+        borderRadius:12, cursor:'pointer',
+        background: paymentMethod==='cod' ? 'var(--peach-light)' : 'var(--white)',
+        transition:'all .2s'
+      }}
+    >
+      <div style={{
+        width:20, height:20, borderRadius:'50%',
+        border:`2px solid ${paymentMethod==='cod' ? 'var(--peach)' : 'var(--border)'}`,
+        display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0
+      }}>
+        {paymentMethod==='cod' && <div style={{width:10,height:10,borderRadius:'50%',background:'var(--peach)'}}/>}
+      </div>
+      <div>
+        <div style={{fontSize:14,fontWeight:500,color:'var(--charcoal)'}}>💵 Cash on Delivery</div>
+        <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>Pay when your order arrives</div>
+      </div>
+    </div>
+
+    {/* Card Option */}
+    <div>
+      <div
+        onClick={() => { setPaymentMethod('card'); setCardExpanded(true) }}
+        style={{
+          display:'flex', alignItems:'center', gap:16,
+          padding:'16px 20px',
+          border:`2px solid ${paymentMethod==='card' ? '#F87171' : 'var(--border)'}`,
+          borderRadius: cardExpanded ? '12px 12px 0 0' : 12,
+          cursor:'pointer',
+          background: paymentMethod==='card' ? '#FEF2F2' : 'var(--white)',
+          transition:'all .2s'
+        }}
+      >
+        <div style={{
+          width:20, height:20, borderRadius:'50%',
+          border:`2px solid ${paymentMethod==='card' ? '#F87171' : 'var(--border)'}`,
+          display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0
+        }}>
+          {paymentMethod==='card' && <div style={{width:10,height:10,borderRadius:'50%',background:'#F87171'}}/>}
+        </div>
+        <div>
+          <div style={{fontSize:14,fontWeight:500,color:'var(--charcoal)'}}>💳 Card Payment</div>
+          <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>Visa, Mastercard, Amex</div>
+        </div>
+      </div>
+
+      {/* Expandable message */}
+      {cardExpanded && (
+        <div style={{
+          background:'#FEF2F2', border:'2px solid #F87171', borderTop:'none',
+          borderRadius:'0 0 12px 12px', padding:'16px 20px',
+          display:'flex', gap:12, alignItems:'flex-start'
+        }}>
+          <span style={{fontSize:18}}>🚧</span>
+          <div>
+            <div style={{fontSize:13,fontWeight:600,color:'#DC2626',marginBottom:4}}>
+              Card payment is not yet available
+            </div>
+            <div style={{fontSize:12,color:'#EF4444',lineHeight:1.7}}>
+              We're working on bringing card payments to Formula Me. For now, please select <strong>Cash on Delivery</strong> to complete your order.
             </div>
           </div>
         </div>
+      )}
+    </div>
+
+    {/* Payment validation error */}
+    {errors.payment && (
+      <p style={{color:'#EF4444',fontSize:11,marginTop:4}}>{errors.payment}</p>
+    )}
+  </div>
+</div>
+          </div>
         <div>
           <div style={{background:'var(--white)',border:'1px solid var(--border)',borderRadius:12,padding:24,position:'sticky',top:80}}>
             <div style={{fontSize:13,fontWeight:500,color:'var(--charcoal)',marginBottom:16}}>Order Summary</div>
@@ -1371,19 +1432,18 @@ function Checkout({ cart, onClearCart, userId }) {
               </div>
             )}
             <div style={{display:'flex',justifyContent:'space-between',fontSize:14,color:'var(--muted)',marginBottom:8}}>
-              <span>Delivery</span><span>{total >= 40 ? 'Free' : '£3.99'}</span>
+              <span>Delivery</span><span>{total >= 40 ? 'Free' : '£5.99'}</span>
             </div>
             <div style={{display:'flex',justifyContent:'space-between',fontSize:17,fontWeight:600,color:'var(--charcoal)',marginBottom:20}}>
               <span>Total</span><span>£{(() => {
                 const subtotal = total - discount
-                const deliveryCost = total >= 40 ? 0 : 3.99
+                const deliveryCost = total >= 40 ? 0 : 5.99 
                 return Math.max(0, subtotal + deliveryCost).toFixed(2)
               })()}</span>
             </div>
             <button className="btn-primary" style={{width:'100%',justifyContent:'center'}} onClick={handlePlace}>
               Place Order
             </button>
-            <p style={{fontSize:11,color:'var(--muted)',textAlign:'center',marginTop:12}}>Your payment details are protected with 256-bit SSL encryption.</p>
           </div>
         </div>
       </div>
@@ -1716,11 +1776,11 @@ function About() {
   },
 ]
   const team = [
-  { name:'Zaina Mahien',    role:'Frontend Developer',       initial:'Z' },
-  { name:'Hawa Hayat Ali',  role:'Project Planning',         initial:'H' },
-  { name:'Amina Rifa',      role:'Requirements Engineer',    initial:'A' },
-  { name:'Faiha Mubarak',   role:'Backend Developer',        initial:'F' },
-  { name:'Nurah',           role:'Database Administrator',   initial:'N' },
+  { name:'Zaina Mahien',      initial:'Z' },
+  { name:'Hawa Hayat Ali',         initial:'H' },
+  { name:'Amina Rifa',        initial:'A' },
+  { name:'Faiha Mubarak',        initial:'F' },
+  { name:'Nurah',             initial:'N' },
 ]
   return (
     <div>
@@ -1888,6 +1948,7 @@ function OrderTracking() {
     </div>
   )
 }
+
 
 function Login() {
   const navigate = useNavigate()
@@ -2983,16 +3044,8 @@ function Shipping() {
 
   const shippingOptions = {
     UK: [
-      { method: 'Standard', time: '2-3 business days', cost: 'Free', icon: '🚚' },
+      { method: 'Standard', time: '2-3 business days', cost: 'Free over £40', icon: '🚚' },
       { method: 'Express', time: 'Next business day', cost: '£5.99', icon: '⚡' }
-    ],
-    AE: [
-      { method: 'Standard', time: '3-5 business days', cost: 'Free', icon: '🚚' },
-      { method: 'Express', time: '2-3 business days', cost: 'AED25.99', icon: '⚡' }
-    ],
-    US: [
-      { method: 'Standard', time: '5-7 business days', cost: 'Free', icon: '🚚' },
-      { method: 'Express', time: '3-4 business days', cost: '$25.99', icon: '⚡' }
     ]
   }
 
@@ -3014,33 +3067,23 @@ function Shipping() {
         </button>
       </section>
 
-      {showCalculator && (
-        <section style={{padding:'40px 48px', background:'#FDF8F2'}}>
-          <div style={{maxWidth:600, margin:'0 auto', textAlign:'center'}}>
-            <h2 style={{color:'#F2A07B', marginBottom:20}}>Calculate Your Shipping</h2>
-            <select
-              value={selectedCountry}
-              onChange={e => setSelectedCountry(e.target.value)}
-              style={{padding:'12px', border:'1px solid #ddd', borderRadius:8, fontSize:16, marginBottom:20, minWidth:200}}
-            >
-              <option value="UK">United Kindom</option>
-              <option value="AE">United Arab Emirates</option>
-              <option value="US">United States</option>
-            </select>
-            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:20}}>
-              {shippingOptions[selectedCountry].map((option, i) => (
-                <div key={i} style={{background:'white', padding:'24px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
-                  <div style={{fontSize:32, marginBottom:12}}>{option.icon}</div>
-                  <h3 style={{color:'#F472B6', marginBottom:8}}>{option.method}</h3>
-                  <div style={{color:'#666', marginBottom:4}}>{option.time}</div>
-                  <div style={{fontSize:20, fontWeight:'bold', color:'#F2A07B'}}>{option.cost}</div>
-                </div>
-              ))}
-            </div>
+     {showCalculator && (
+  <section style={{padding:'40px 48px', background:'#FDF8F2'}}>
+    <div style={{maxWidth:600, margin:'0 auto', textAlign:'center'}}>
+      <h2 style={{color:'#F2A07B', marginBottom:20}}>UK Shipping Rates</h2>
+      <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:20}}>
+        {shippingOptions.UK.map((option, i) => (
+          <div key={i} style={{background:'white', padding:'24px', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.1)'}}>
+            <div style={{fontSize:32, marginBottom:12}}>{option.icon}</div>
+            <h3 style={{color:'#F472B6', marginBottom:8}}>{option.method}</h3>
+            <div style={{color:'#666', marginBottom:4}}>{option.time}</div>
+            <div style={{fontSize:20, fontWeight:'bold', color:'#F2A07B'}}>{option.cost}</div>
           </div>
-        </section>
-      )}
-
+        ))}
+      </div>
+    </div>
+  </section>
+)}
       <section style={{padding:'80px 48px'}}>
         <div style={{maxWidth:1000, margin:'0 auto'}}>
           <div style={{textAlign:'center', marginBottom:60}}>
@@ -3109,7 +3152,7 @@ function Returns() {
 
   return (
     <div>
-      <section style={{background: 'linear-gradient(135deg, #F472B6, #fdb284)', padding:'100px 48px', textAlign:'center'}}>
+      <section style={{background: 'linear-gradient(135deg, #fa97ca, #f8ceb4)', padding:'100px 48px', textAlign:'center'}}>
         <p style={{fontSize:11,letterSpacing:'.2em',textTransform:'uppercase',color:'white',marginBottom:16}}>Hassle-Free</p>
         <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:58,fontWeight:300,color:'white',maxWidth:700,margin:'0 auto 24px',lineHeight:1.15}}>
           Returns & <em style={{color:'#FDE8D8'}}>Exchanges</em>
@@ -3279,12 +3322,12 @@ function FAQ() {
     {
       category: 'shipping',
       question: 'Do you ship internationally?',
-      answer: 'Yes! We ship to over 50 countries. Shipping costs and delivery times vary by location.'
+      answer: 'We currently deliver within the UK only. Enter your UK address at checkout and enjoy free standard delivery on orders over £40.' 
     },
     {
       category: 'shipping',
       question: 'How long does shipping take?',
-      answer: 'UK orders typically arrive in 2-3 business days. International orders take 5-10 business days.'
+      answer: 'Standard UK delivery takes 2-3 business days. Express next-day delivery is available for £5.99.'
     },
     {
       category: 'returns',
@@ -3335,10 +3378,10 @@ function FAQ() {
 
   return (
     <div>
-      <section style={{background: 'linear-gradient(135deg, #F2A07B, #FDE8D8)', padding:'100px 48px', textAlign:'center'}}>
+      <section style={{background: 'linear-gradient(180deg, #F472B6, #FDF8F2)', padding:'100px 48px', textAlign:'center'}}>
         <p style={{fontSize:11,letterSpacing:'.2em',textTransform:'uppercase',color:'white',marginBottom:16}}>Help Center</p>
         <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:58,fontWeight:300,color:'white',maxWidth:700,margin:'0 auto 24px',lineHeight:1.15}}>
-          Frequently Asked <em style={{color:'#C4B5FD'}}>Questions</em>
+          Frequently Asked <em style={{color:'#a9457a'}}>Questions</em>
         </h1>
         <p style={{fontSize:15,color:'rgba(255,255,255,0.9)',maxWidth:540,margin:'0 auto',lineHeight:1.9}}>
           Can't find what you're looking for? Our FAQ covers everything from orders to skincare advice.
@@ -3402,11 +3445,11 @@ function FAQ() {
         </div>
       </section>
 
-      <section style={{background:'#C4B5FD', padding:'80px 48px', textAlign:'center', color:'white'}}>
+      <section style={{background:'#F472B6', padding:'80px 48px', textAlign:'center', color:'white'}}>
         <h2 style={{fontFamily:'Cormorant Garamond,serif', fontSize:38, fontWeight:300, marginBottom:16}}>Still Need Help?</h2>
         <p style={{fontSize:16, opacity:0.9, marginBottom:32}}>Our friendly customer service team is here to assist you.</p>
         <div style={{display:'flex', justifyContent:'center', gap:20}}>
-          <button className="btn-primary" onClick={() => navigate('/contact')} style={{background:'white', color:'#C4B5FD'}}>Contact Us</button>
+          <button className="btn-primary" onClick={() => navigate('/contact')} style={{background:'white', color:'#F472B6'}}>Contact Us</button>
           <button onClick={() => navigate('/')} style={{background:'transparent', color:'white', border:'1px solid white', padding:'13px 32px', borderRadius:40, cursor:'pointer'}}>
             Back to Home
           </button>
@@ -3598,6 +3641,7 @@ export default function App() {
         <Route path="/cart" element={<Cart cart={cart} onRemove={removeFromCart} setCart={setCart}/>}/>
         <Route path="/checkout" element={<Checkout cart={cart} onClearCart={clearCart} userId={userId}/>}/>
         <Route path="/profile" element={<Profile userId={userId}/>}/>
+        <Route path="/tracking" element={<OrderTracking/>}/>
       </Routes>
       <NewsletterPopup
         isOpen={showNewsletter}
