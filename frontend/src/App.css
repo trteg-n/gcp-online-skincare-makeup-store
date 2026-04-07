@@ -17,10 +17,11 @@
   height: auto;
 }
 .nav-logo {
-  font-family: 'Dawning of a New Day', cursive;
-  font-size: 28px; letter-spacing:.04em;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px; font-weight: 600; letter-spacing: .08em;
   background: linear-gradient(135deg, var(--peach), var(--pink));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  transition: transform 0.3s ease;
   cursor: pointer;
 }
 
@@ -848,6 +849,7 @@
   z-index: 2;
 }
 
+
 .card-price {
   font-size: 15px; color: var(--peach); font-weight: 600;
   transition: transform 0.3s ease;
@@ -1577,13 +1579,7 @@ img { max-width: 100%; }
   display: flex; align-items: center; justify-content: space-between;
   height: 72px;
 }
-.nav-logo {
-  font-family: 'Dawning of a New Day', cursive;
-  font-size: 28px; letter-spacing:.04em;
-  background: linear-gradient(135deg, var(--peach), var(--pink));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  cursor: pointer;
-}
+
 .nav-links { display: flex; gap: 36px; }
 .nav-links a {
   font-size: 13px; letter-spacing:.06em; color: var(--muted);
@@ -1741,7 +1737,6 @@ img { max-width: 100%; }
   font-family: 'Cormorant Garamond', serif;
   font-size:20px; color:var(--charcoal); margin-bottom:10px; line-height:1.3;
 }
-.card-footer { display:flex; align-items:center; justify-content:space-between; }
 .card-price { font-size:15px; color:var(--peach); font-weight:600; }
 .card-add {
   width:32px; height:32px; border-radius:50%;
@@ -1930,26 +1925,7 @@ img { max-width: 100%; }
 .detail-perks { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
 .perk { font-size:12px; color:var(--muted); display:flex; gap:6px; align-items:center; }
 
-/* ── FOOTER ── */
-.footer {
-  background:var(--charcoal); color:var(--coconut);
-  padding:64px 56px; display:grid;
-  grid-template-columns:2fr 1fr 1fr 1fr; gap:48px;
-}
-.footer-brand {
-  font-family:'Dawning of a New Day',cursive;
-  font-size:32px; margin-bottom:14px;
-  background:linear-gradient(135deg,var(--peach),var(--pink));
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-}
-.footer-desc { font-size:13px; color:#888; line-height:1.8; max-width:260px; }
-.footer-col-title { font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#666; margin-bottom:18px; }
-.footer-link { font-size:13px; color:#aaa; margin-bottom:14px; display:block; cursor:pointer; transition:color .2s; }
-.footer-link:hover { color:var(--peach); }
-.footer-bottom {
-  background:#111; color:#555; padding:18px 56px;
-  font-size:11px; display:flex; justify-content:space-between; letter-spacing:.04em;
-}
+
 
 /* ── BREADCRUMB ── */
 .breadcrumb {
@@ -1990,7 +1966,6 @@ img { max-width: 100%; }
   .sidebar { display:none; }
   .detail-layout { grid-template-columns:1fr; }
   .editorial-strip { grid-template-columns:1fr; }
-  .footer { grid-template-columns:1fr 1fr; padding:40px 20px; }
 }
 /* ── CART ── */
 .cart-page { max-width: 1100px; margin: 0 auto; padding: 60px 40px; }
