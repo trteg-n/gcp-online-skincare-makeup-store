@@ -9,35 +9,35 @@ const PRODUCTS = [
   { id:1,  name:'Vitamin C Brightening Serum',    category:'Serum',        price:38, images:['/images/serum-1.jpg','/images/serum-2.jpg','/images/serum-3.jpg'], skin:['Dull','Uneven Tone'],badge:'Best Seller', desc:'A stable 15% Vitamin C serum targeting hyperpigmentation and dullness. Enhanced with ferulic acid for extended potency.', ingredients:'Aqua, Ascorbic Acid 15%, Propanediol, Glycerin, Ferulic Acid, Tocopherol, Sodium Hyaluronate' },
   { id:2,  name:'Hydra-Barrier Moisturiser SPF30', category:'Moisturiser',  price:45, images:['/images/moisturiser-5.jpg','/images/moisturiser-7.jpg'], skin:['Dry','Sensitive'], badge:'New', desc:'A ceramide-rich moisturiser with SPF 30. Repairs the skin barrier while providing daily UV protection.', ingredients:'Aqua, Ceramide NP, Glycerin, Niacinamide, Zinc Oxide, Shea Butter, Panthenol' },
   { id:3,  name:'Skin-Tint Foundation 30ml',       category:'Foundation',   price:32, images:['/images/foundation-1.jpg','/images/foundation-3.jpg','/images/foundation-4.jpg'], skin:['All Types'], badge:null, desc:'A lightweight skin-tint foundation with buildable coverage. Enriched with hyaluronic acid for a dewy finish.', ingredients:'Aqua, Cyclopentasiloxane, Titanium Dioxide, Hyaluronic Acid, Niacinamide, Glycerin' },
-  { id:4,  name:'Daily Mineral Sunscreen SPF50',   category:'SPF',          price:28, images:['/images/spf-1.jpg','/images/spf-2.jpg','/images/spf-3.jpg','/images/spf-4.jpg'], skin:['All Types','Sensitive'], badge:'Must Have', desc:'A 100% mineral SPF 50 sunscreen with zinc oxide. Fragrance-free and reef-safe formula.', ingredients:'Zinc Oxide 20%, Aqua, Caprylic/Capric Triglyceride, Glycerin, Bisabolol' },
-  { id:5,  name:'Peptide Eye Cream 15ml',          category:'Eye Care',     price:34, images:['/images/eyecream-2.jpg','/images/eyecream-1.jpg'], skin:['Mature','Dry'], badge:null, desc:'A concentrated peptide eye cream targeting fine lines and dark circles. Caffeine reduces puffiness overnight.', ingredients:'Aqua, Palmitoyl Tripeptide-1, Caffeine, Hyaluronic Acid, Niacinamide, Glycerin' },
-  { id:6,  name:'Niacinamide 10% Pore Serum',      category:'Serum',        price:22, images:['/images/serum-2.jpg','/images/serum-1.jpg','/images/serum-3.jpg'], skin:['Oily','Acne-Prone'], badge:'Best Seller', desc:'A 10% niacinamide serum that visibly minimises pores and controls excess sebum within 4 weeks.', ingredients:'Aqua, Niacinamide 10%, Zinc PCA, Propanediol, Panthenol, Glycerin' },
-  { id:7,  name:'Retinol 0.5% Night Serum',        category:'Serum',        price:42, images:['/images/serum-3.jpg','/images/serum-4.jpg','/images/serum-1.jpg'], skin:['Mature','Uneven Tone'], badge:null, desc:'An encapsulated 0.5% retinol serum for overnight skin renewal. Paired with bakuchiol for gentle delivery.', ingredients:'Aqua, Retinol 0.5% (encapsulated), Bakuchiol, Squalane, Glycerin, Ceramide AP' },
-  { id:8,  name:'Brightening Day Cream SPF20',     category:'Moisturiser',  price:36, images:['/images/moisturiser-2.jpg','/images/moisturiser-3.jpg'], skin:['Dull','Combination'], badge:null, desc:'A multitasking day cream combining SPF 20 with a 5% vitamin C derivative for daily brightening.', ingredients:'Aqua, Ascorbyl Glucoside 5%, Titanium Dioxide, Niacinamide, Glycerin, Ceramide NP' },
-  { id:9,  name:'Glow-Prep Exfoliating Toner',     category:'Toner',        price:24, images:['/images/toner-1.jpg','/images/serum-2.jpg'], skin:['Dull','Congested'], badge:'New', desc:'An AHA/BHA toner with 5% glycolic acid and 2% salicylic acid. Removes dead skin cells and refines pores.', ingredients:'Aqua, Glycolic Acid 5%, Salicylic Acid 2%, Niacinamide, Aloe Vera, Panthenol' },
-  { id:10, name:'Mineral UV Shield SPF50',         category:'SPF',          price:30, images:['/images/spf-2.jpg','/images/spf-1.jpg','/images/spf-3.jpg'], skin:['Sensitive','Acne-Prone'], badge:null, desc:'A weightless mineral sunscreen with a universal tint. Zero white cast, suitable for all skin tones.', ingredients:'Zinc Oxide 18%, Titanium Dioxide 5%, Aqua, Squalane, Glycerin, Bisabolol' },
-  { id:11, name:'Dragonfruit Glow Mask',           category:'Treatment',    price:26, images:['/images/mask-1.jpg','/images/mask-2.jpg','/images/mask-3.jpg'], skin:['Dull','Dry'], badge:'New', desc:'A 10-minute brightening mask packed with dragonfruit extract and vitamin C. Leaves skin visibly glowing.', ingredients:'Aqua, Hylocereus Undatus Extract, Ascorbic Acid, Kaolin, Glycerin, Allantoin' },
-  { id:12, name:'Ceramide Barrier Serum',          category:'Serum',        price:40, images:['/images/serum-21.jpg','/images/serum-22.jpg'], skin:['Sensitive','Dry'], badge:null, desc:'A barrier-repair serum with three essential ceramides, cholesterol and fatty acids in the skin-identical ratio.', ingredients:'Aqua, Ceramide NP, Ceramide AP, Ceramide EOP, Cholesterol, Fatty Acids, Glycerin' },
-  { id:13, name:'Tinted Lip Treatment SPF15',      category:'Lip Care',     price:18, images:['/images/lipcare-2.jpg','/images/lipbalm.jpg'], skin:['All Types'], badge:'Best Seller', desc:'A nourishing tinted lip balm with SPF 15. Shea butter and vitamin E keep lips soft all day.', ingredients:'Shea Butter, Castor Oil, Tocopherol, Titanium Dioxide, Candelilla Wax' },
+  { id:4,  name:'Daily Mineral Sunscreen SPF50',   category:'SPF',          price:28, images:['/images/spf-7.jpg','/images/spf-2.jpg'], skin:['All Types','Sensitive'], badge:'Must Have', desc:'A 100% mineral SPF 50 sunscreen with zinc oxide. Fragrance-free and reef-safe formula.', ingredients:'Zinc Oxide 20%, Aqua, Caprylic/Capric Triglyceride, Glycerin, Bisabolol' },
+  { id:5,  name:'Glow Mask',                       category:'Treatment',    price:26, images:['/images/mask-2.jpg'], skin:['Dull','Dry'], badge:'New', desc:'A 10-minute brightening mask packed with dragonfruit extract and vitamin C. Leaves skin visibly glowing.', ingredients:'Aqua, Hylocereus Undatus Extract, Ascorbic Acid, Kaolin, Glycerin, Allantoin' },
+  { id:6,  name:'Niacinamide 10% Pore Serum',      category:'Serum',        price:22, images:['/images/serum-33.jpg','/images/serum-3.jpg'], skin:['Oily','Acne-Prone'], badge:'Best Seller', desc:'A 10% niacinamide serum that visibly minimises pores and controls excess sebum within 4 weeks.', ingredients:'Aqua, Niacinamide 10%, Zinc PCA, Propanediol, Panthenol, Glycerin' },
+  { id:7,  name:'Retinol 0.5% Night Serum',        category:'Serum',        price:42, images:['/images/serum-30.jpg','/images/serum-3.jpg'], skin:['Mature','Uneven Tone'], badge:null, desc:'An encapsulated 0.5% retinol serum for overnight skin renewal. Paired with bakuchiol for gentle delivery.', ingredients:'Aqua, Retinol 0.5% (encapsulated), Bakuchiol, Squalane, Glycerin, Ceramide AP' },
+  { id:8,  name:'Brightening Day Cream SPF20',     category:'Moisturiser',  price:36, images:['/images/cream-1.jpg','/images/moisturiser-3.jpg'], skin:['Dull','Combination'], badge:null, desc:'A multitasking day cream combining SPF 20 with a 5% vitamin C derivative for daily brightening.', ingredients:'Aqua, Ascorbyl Glucoside 5%, Titanium Dioxide, Niacinamide, Glycerin, Ceramide NP' },
+  { id:9,  name:'Glow-Prep Exfoliating Toner',     category:'Toner',        price:24, images:['/images/toner-1.jpg'], skin:['Dull','Congested'], badge:'New', desc:'An AHA/BHA toner with 5% glycolic acid and 2% salicylic acid. Removes dead skin cells and refines pores.', ingredients:'Aqua, Glycolic Acid 5%, Salicylic Acid 2%, Niacinamide, Aloe Vera, Panthenol' },
+  { id:10, name:'Mineral UV Shield SPF50',         category:'SPF',          price:30, images:['/images/spf-10.jpg','/images/spf-5.jpg'], skin:['Sensitive','Acne-Prone'], badge:null, desc:'A weightless mineral sunscreen with a universal tint. Zero white cast, suitable for all skin tones.', ingredients:'Zinc Oxide 18%, Titanium Dioxide 5%, Aqua, Squalane, Glycerin, Bisabolol' },
+  { id:11, name:'Peptide Eye Cream 15ml',          category:'Eye Care',     price:34, images:['/images/eyecream-1.jpg'], skin:['Mature','Dry'], badge:null, desc:'A concentrated peptide eye cream targeting fine lines and dark circles. Caffeine reduces puffiness overnight.', ingredients:'Aqua, Palmitoyl Tripeptide-1, Caffeine, Hyaluronic Acid, Niacinamide, Glycerin' },
+  { id:12, name:'Ceramide Barrier Serum',          category:'Serum',        price:40, images:['/images/serum-22.jpg','/images/serum-21.jpg'], skin:['Sensitive','Dry'], badge:null, desc:'A barrier-repair serum with three essential ceramides, cholesterol and fatty acids in the skin-identical ratio.', ingredients:'Aqua, Ceramide NP, Ceramide AP, Ceramide EOP, Cholesterol, Fatty Acids, Glycerin' },
+  { id:13, name:'Tinted Lip Treatment SPF15',      category:'Lip Care',     price:18, images:['/images/lipcare-2.jpg'], skin:['All Types'], badge:'Best Seller', desc:'A nourishing tinted lip balm with SPF 15. Shea butter and vitamin E keep lips soft all day.', ingredients:'Shea Butter, Castor Oil, Tocopherol, Titanium Dioxide, Candelilla Wax' },
   { id:14, name:'Lip Plumer Hydration',            category:'Lip Care',     price:18, images:['/images/lipgloss-2.jpg','/images/lipgloss-1.jpg','/images/lipstick-4.jpg','/images/lipstick-3.jpg'], skin:['All Types'], badge:'Best Seller', desc:'A nourishing tinted lip balm with SPF 15. Shea butter and vitamin E keep lips soft all day.', ingredients:'Shea Butter, Castor Oil, Tocopherol, Titanium Dioxide, Candelilla Wax' },
-  { id:15, name:'Peptide Lip Treatment',           category:'Lip Care',     price:15, images:['/images/lipgloss-3.jpg','/images/lipgloss-4.jpg'], skin:['All Types'], badge:'Best Seller', desc:'A nourishing tinted lip balm with SPF 15. Shea butter and vitamin E keep lips soft all day.', ingredients:'Shea Butter, Castor Oil, Tocopherol, Titanium Dioxide, Candelilla Wax' },
-  { id:16, name:'AHA Resurfacing Night Mask',      category:'Treatment',    price:32, images:['/images/mask-2.jpg','/images/mask-3.jpg','/images/mask-1.jpg'], skin:['Mature','Dull'], badge:null, desc:'An overnight resurfacing mask with 10% lactic acid. Wake up to visibly smoother, more radiant skin.', ingredients:'Aqua, Lactic Acid 10%, Glycerin, Shea Butter, Ceramide NP, Niacinamide, Allantoin' },
-  { id:17, name:'Squalane Cleansing Oil',          category:'Cleanser',     price:22, images:['/images/cleanser-1.jpg','/images/face-1.jpg'], skin:['All Types','Dry'], badge:null, desc:'A gentle oil cleanser that dissolves SPF and makeup without stripping the skin barrier. Rinses clean.', ingredients:'Squalane, Caprylic Triglyceride, PEG-20 Glyceryl Triisostearate, Tocopherol' },
-  { id:18, name:'Hyaluronic Acid Serum 2%',        category:'Serum',        price:26, images:['/images/serum-33.jpg'], skin:['Dry','Dehydrated'], badge:null, desc:'A multi-weight hyaluronic acid serum delivering hydration at three skin depths. Plumps and smooths instantly.', ingredients:'Aqua, Sodium Hyaluronate 2% (LMW/HMW/XLMW), Glycerin, Panthenol, Allantoin' },
-  { id:19, name:'SPF Mist Setting Spray',          category:'SPF',          price:20, images:['/images/spf-3.jpg','/images/spf-4.jpg','/images/spf-1.jpg'], skin:['All Types'], badge:'New', desc:'A setting spray with SPF 30 for touch-ups on the go. Refreshes makeup while boosting UV protection.', ingredients:'Aqua, Ethylhexyl Methoxycinnamate, Glycerin, Aloe Vera, Niacinamide, Panthenol' },
-  { id:20, name:'Azelaic Acid 10% Cream',          category:'Treatment',    price:28, images:['/images/moisturiser-4.jpg','/images/moisturiser-1.jpg'], skin:['Acne-Prone','Rosacea'], badge:null, desc:'A 10% azelaic acid cream targeting blemishes, redness and post-acne marks. Gentle enough for daily use.', ingredients:'Aqua, Azelaic Acid 10%, Glycerin, Dimethicone, Allantoin, Ceramide NP, Panthenol' },
-  { id:21, name:'Cream Stick Blush',               category:'Makeup',       price:24, images:['/images/blush-1.jpg','/images/blush-2.jpg','/images/blush-3.jpg'], skin:['All Types'], badge:'Best Seller', desc:'A silky primer with a peach-tinted blur. Fills fine lines and creates a flawless base for foundation.', ingredients:'Aqua, Cyclopentasiloxane, Dimethicone, Niacinamide, Iron Oxides, Glycerin' },
+  { id:15, name:'Peptide Lip Treatment',           category:'Lip Care',     price:15, images:['/images/lipgloss-4.jpg','/images/lipgloss-3.jpg'], skin:['All Types'], badge:'Best Seller', desc:'A nourishing tinted lip balm with SPF 15. Shea butter and vitamin E keep lips soft all day.', ingredients:'Shea Butter, Castor Oil, Tocopherol, Titanium Dioxide, Candelilla Wax' },
+  { id:16, name:'AHA Resurfacing Night Mask',      category:'Treatment',    price:32, images:['/images/mask-3.jpg','/images/moisturiser-6.jpg'], skin:['Mature','Dull'], badge:null, desc:'An overnight resurfacing mask with 10% lactic acid. Wake up to visibly smoother, more radiant skin.', ingredients:'Aqua, Lactic Acid 10%, Glycerin, Shea Butter, Ceramide NP, Niacinamide, Allantoin' },
+  { id:17, name:'Gentle Foam Cleanser',            category:'Cleanser',     price:22, images:['/images/cleanser-1.jpg','/images/cleanser-2.jpg'], skin:['All Types','Dry'], badge:null, desc:'A gentle foam cleanser that dissolves SPF and makeup without stripping the skin barrier. Rinses clean.', ingredients:'Caprylic Triglyceride, PEG-20 Glyceryl Triisostearate, Tocopherol' },
+  { id:18, name:'Hyaluronic Acid Serum 2%',        category:'Serum',        price:26, images:['/images/serum-10.jpg','/images/serum-11.jpg'], skin:['Dry','Dehydrated'], badge:null, desc:'A multi-weight hyaluronic acid serum delivering hydration at three skin depths. Plumps and smooths instantly.', ingredients:'Aqua, Sodium Hyaluronate 2% (LMW/HMW/XLMW), Glycerin, Panthenol, Allantoin' },
+  { id:19, name:'SPF Mist Setting Spray',          category:'SPF',          price:20, images:['/images/toner-2.jpg','/images/toner.jpg'], skin:['All Types'], badge:'New', desc:'A setting spray with SPF 30 for touch-ups on the go. Refreshes makeup while boosting UV protection.', ingredients:'Aqua, Ethylhexyl Methoxycinnamate, Glycerin, Aloe Vera, Niacinamide, Panthenol' },
+  { id:20, name:'Azelaic Acid 10% Cream',          category:'Treatment',    price:28, images:['/images/moisturiser-1.jpg'], skin:['Acne-Prone','Rosacea'], badge:null, desc:'A 10% azelaic acid cream targeting blemishes, redness and post-acne marks. Gentle enough for daily use.', ingredients:'Aqua, Azelaic Acid 10%, Glycerin, Dimethicone, Allantoin, Ceramide NP, Panthenol' },
+  { id:21, name:'Cream Stick Blush',               category:'Makeup',       price:24, images:['/images/blush-2.jpg'], skin:['All Types'], badge:'Best Seller', desc:'A silky primer with a peach-tinted blur. Fills fine lines and creates a flawless base for foundation.', ingredients:'Aqua, Cyclopentasiloxane, Dimethicone, Niacinamide, Iron Oxides, Glycerin' },
   { id:22, name:'Bakuchiol Firming Serum',         category:'Serum',        price:44, images:['/images/serum-14.jpg'], skin:['Mature','Sensitive'], badge:'New', desc:'A plant-based retinol alternative with 1% bakuchiol. Firms and smooths skin with zero irritation.', ingredients:'Aqua, Bakuchiol 1%, Squalane, Glycerin, Ceramide NP, Niacinamide, Hyaluronic Acid' },
 ]
 
-const CATEGORIES = ['All','Serum','Moisturiser','Foundation','SPF','Eye Care','Toner','Treatment','Lip Care','Cleanser','Makeup']
+const CATEGORIES = ['All','Serum','Moisturiser','Foundation','SPF','Eye Care','Toner','Treatment','Lip Care','Cleanser']
 
 function AnnouncementBar() {
   const messages = [
-    '✦Free delivery over £40 · Clinically tested · Dermatologist approved✦',
-    '✦New: Dragonfruit Glow Mask - 20% off this week!✦',
-    '✦Join 50,000+ happy customers · 30-day returns✦',
-    '✦Skin quiz takes under 5 minutes · Get personalized recommendations✦'
+    '✦FREE DELIVERY OVER £40 · CLINCIALLY TESTED · DERMATOLOGIST APPROVED✦',
+    '✦NEW: GLOW MASK - 20% OFF THIS WEEKEND!✦',
+    '✦JOIN 50,000+ HAPPY CUSTOMERS · 30-DAY RETURNS✦',
+    '✦SKIN QUIZ TAKES UNDER 5 MINUTES · GET PERSONALIZED RECOMMDATIONS✦'
   ]
   const repeated = [...messages, ...messages]
   return (
@@ -195,11 +195,17 @@ function Nav({ cartCount, userId }) {
     <nav className="nav">
       <div className="nav-logo" onClick={() => navigate('/')} style={{cursor:'pointer'}}>Formula Me</div>
       <div className="nav-links">
+                <Link to="/">Home</Link>
         <Link to="/catalogue">Shop</Link>
         <Link to="/quiz">Skin Quiz</Link>
         <Link to="/about">About</Link>
+        <Link to="/tracking">Track Order</Link>
+
       </div>
       <div className="nav-icons">
+         <button className="nav-icon" onClick={() => navigate('/catalogue')}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </button>
         <button className="nav-icon" onClick={() => navigate(userId ? '/profile' : '/login')} title="Account">
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
@@ -315,6 +321,10 @@ function Footer({ userId }) {
               Sustainability
             </motion.span>
           </div>
+          <div>
+          <div className="footer-col-title">Follow</div>
+          <a className="footer-link" href="https://www.instagram.com/formulameofficial/" target="_blank" rel="noreferrer">Instagram</a>
+          </div>
 
           <div className="footer-section">
             <div className="footer-col-title">Help</div>
@@ -387,41 +397,8 @@ function Footer({ userId }) {
             </motion.span>
           </div>
 
-          <div className="footer-section">
-            <div className="footer-col-title">Shop</div>
-            <motion.span
-              className="footer-link"
-              onClick={() => navigate('/catalogue')}
-              whileHover={{ x: 5, color: 'var(--peach)' }}
-              transition={{ duration: 0.2 }}
-            >
-              All Products
-            </motion.span>
-            <motion.span
-              className="footer-link"
-              onClick={() => navigate('/catalogue')}
-              whileHover={{ x: 5, color: 'var(--peach)' }}
-              transition={{ duration: 0.2 }}
-            >
-              Skincare
-            </motion.span>
-            <motion.span
-              className="footer-link"
-              onClick={() => navigate('/catalogue')}
-              whileHover={{ x: 5, color: 'var(--peach)' }}
-              transition={{ duration: 0.2 }}
-            >
-              Makeup
-            </motion.span>
-            <motion.span
-              className="footer-link"
-              onClick={() => navigate('/catalogue')}
-              whileHover={{ x: 5, color: 'var(--peach)' }}
-              transition={{ duration: 0.2 }}
-            >
-              SPF
-            </motion.span>
-          </div>
+           
+             
         </div>
       </footer>
       <div className="footer-bottom">
@@ -548,206 +525,181 @@ function Features() {
   );
 }
 
-function Home({ onAddToCart, userId }) {
+function Home({ onAddToCart }) {
   const navigate = useNavigate()
-  const location = useLocation()
-  
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [location])
-  
   const featured = PRODUCTS.slice(0, 4)
+  const [showCoupon, setShowCoupon] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const parallaxRef = useRef(null)
+  const sectionsRef = useRef([])
+  
+   useEffect(() => {
+    const timer = setTimeout(() => setShowCoupon(true), 5000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    function handleScroll() {
+      // parallax removed — video hero
+      sectionsRef.current.forEach(s => {
+        if (!s) return
+        if (s.getBoundingClientRect().top < window.innerHeight * 0.88) {
+          s.classList.add('visible')
+        }
+      })
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  function copyCode() {
+    navigator.clipboard.writeText('FLASH20')
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   const cats = [
-    { name:'Serums', img:'/images/serum-1.jpg', bg:'#FDE8D8' },
-    { name:'Moisturisers', img:'/images/moisturiser-1.jpg', bg:'#FCE7F3' },
-    { name:'Makeup', img:'/images/makeup-1.jpg', bg:'#EDE9FE' },
-    { name:'Sun Care', img:'/images/spf-1.jpg', bg:'#FEF9C3' },
+    { name:'Serums',       img:'/images/serum-22.jpg' },
+    { name:'Moisturisers', img:'/images/mask-1.jpg' },
+    { name:'Lip Glaze',    img:'/images/lips.jpg' },
+    { name:'Sun Care',     img:'/images/spf-1.jpg' },
   ]
 
-  return (
+    return (
     <div>
+
+      {/* COUPON POPUP */}
+     {showCoupon && (
+    <div style={{
+    position:'fixed', bottom:32, Left:32, zIndex:1000,
+    width:320, background:'#fff',
+    borderRadius:4, overflow:'hidden',
+    boxShadow:'0 8px 40px rgba(0,0,0,0.15)',
+    animation:'slideUp .4s ease'
+  }}>
+    <style>{`@keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }`}</style>
+
+    {/* TOP BAR */}
+    <div style={{
+      background:'linear-gradient(135deg, var(--peach), var(--pink))',
+      padding:'20px 24px', position:'relative'
+    }}>
+      <button onClick={() => setShowCoupon(false)} style={{
+        position:'absolute', top:12, right:12,
+        background:'rgba(255,255,255,.25)', border:'none',
+        color:'#fff', width:24, height:24, borderRadius:'50%',
+        cursor:'pointer', fontSize:12, fontFamily:'inherit',
+        display:'flex', alignItems:'center', justifyContent:'center'
+      }}>✕</button>
+      <div style={{fontSize:10,letterSpacing:'.2em',textTransform:'uppercase',color:'rgba(255,255,255,.8)',marginBottom:6}}>
+        Limited Time
+      </div>
+      <div style={{fontFamily:'Cormorant Garamond, serif',fontSize:32,fontWeight:300,color:'#fff',lineHeight:1.1}}>
+        20% Off Today
+      </div>
+    </div>
+
+    {/* BOTTOM */}
+    <div style={{padding:'20px 24px'}}>
+      <p style={{fontSize:12,color:'var(--muted)',lineHeight:1.7,marginBottom:16}}>
+        Use the code below at checkout. Valid today only, no minimum spend.
+      </p>
+      <div style={{display:'flex',gap:0,border:'1.5px solid var(--border)',borderRadius:4,overflow:'hidden',marginBottom:12}}>
+        <div style={{
+          flex:1, padding:'11px 16px',
+          fontFamily:'monospace', fontSize:16, fontWeight:700,
+          letterSpacing:'.12em', color:'var(--charcoal)',
+          background:'var(--coconut)', textAlign:'center'
+        }}>FLASH20</div>
+        <button onClick={copyCode} style={{
+          padding:'11px 16px', border:'none',
+          background: copied ? '#22C55E' : 'var(--charcoal)',
+          color:'#fff', fontSize:11, letterSpacing:'.08em',
+          textTransform:'uppercase', cursor:'pointer',
+          transition:'background .2s', fontFamily:'inherit'
+        }}>
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <button onClick={() => { setShowCoupon(false); navigate('/catalogue') }}
+        className="btn-primary"
+        style={{width:'100%', justifyContent:'center', borderRadius:4, fontSize:12}}>
+        Shop Now
+      </button>
+    </div>
+  </div>
+)}
+
+      {/* CINEMATIC HERO */}
       <section className="hero">
-        <motion.div
-          className="hero-text"
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <motion.p
-            className="hero-eyebrow"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            New Collection · Spring 2026
-          </motion.p>
-          <motion.h1
-            className="hero-title"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            Your skin,<br/><em>your formula</em>
-          </motion.h1>
-          <motion.p
-            className="hero-sub"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            Makeup engineered to work with your skincare — never against it. Personalised for every skin type and concern.
-          </motion.p>
-          <motion.div
-            className="hero-btns"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-          >
-            <motion.button
-              className="btn-primary"
-              onClick={() => navigate('/catalogue')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Shop Now
-            </motion.button>
-            <motion.button
-              className="btn-outline"
-              onClick={() => navigate('/quiz')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Take Skin Quiz
-            </motion.button>
-          </motion.div>
-        </motion.div>
-        <motion.div
-          className="hero-visual"
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-        >
-          {PRODUCTS.slice(0,3).map((p, index) => (
-            <motion.div
-              key={p.id}
-              className="hero-card"
-              onClick={() => navigate(`/product/${p.id}`)}
-              style={{cursor:'pointer'}}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
-              whileHover={{
-                scale: 1.05,
-                y: -5,
-                transition: { duration: 0.2 }
-              }}
-            >
-              <motion.img
-                src={p.images[0]}
-                alt={p.name}
-                style={{width:48,height:48,objectFit:'cover',borderRadius:8}}
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.3 }}
-              />
-              <span className="hero-card-name">{p.name}</span>
-              <span className="hero-card-price">£{p.price}.00</span>
-            </motion.div>
-          ))}
-        </motion.div>
+  <video
+    autoPlay
+    muted
+    loop
+    playsInline
+    style={{
+      position:'absolute', inset:0,
+      width:'100%', height:'100%',
+      objectFit:'cover', zIndex:0
+    }}>
+    <source src="/images/banner.mp4.mp4" type="video/mp4"/>
+  </video>
+  <div className="hero-overlay"/>
+        <div className="hero-content">
+          <p className="hero-eyebrow">New Collection · Spring 2026</p>
+          <h1 className="hero-title">Your skin,<br/><em>your formula</em></h1>
+          <p className="hero-sub">Makeup engineered to work with your skincare — never against it. Personalised for every skin type and concern.</p>
+          <div className="hero-btns">
+            <button className="btn-primary" onClick={() => navigate('/catalogue')}>Shop Now</button>
+            <button className="btn-outline" onClick={() => navigate('/quiz')}>Take Skin Quiz</button>
+          </div>
+        </div>
+        <div className="scroll-badge">
+          <div className="scroll-line"/>
+          Scroll
+        </div>
       </section>
 
-      <motion.section
-        className="section"
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8 }}
-      >
+      {/* FEATURED PRODUCTS */}
+      <section className="section fade-section" ref={el => sectionsRef.current[0] = el}>
         <div className="section-header">
           <h2 className="section-title">Featured Products</h2>
           <span className="section-link" onClick={() => navigate('/catalogue')}>View all 20 products</span>
         </div>
-        <div className="product-grid">
-          {featured.map((p, index) => (
-            <motion.div
-              key={p.id}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              <ProductCard product={p} onAddToCart={onAddToCart} />
-            </motion.div>
-          ))}
+        <div className="featured-grid">
+          {featured.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart}/>)}
         </div>
-      </motion.section>
+      </section>
 
-      <Features />
+      {/* EDITORIAL STRIP */}
+      <section className="editorial-strip fade-section" ref={el => sectionsRef.current[1] = el}>
+        <div className="editorial-img">
+          <img src="/images/lifestyle-1.jpg" alt="Formula Me lifestyle"/>
+        </div>
+        <div className="editorial-text">
+          <div className="editorial-eyebrow">The Formula Me Philosophy</div>
+          <h2 className="editorial-title">Science meets<br/><em>skin care</em></h2>
+          <p className="editorial-desc">Every product is clinically tested and formulated for real skin — not just an ideal. Built for every skin type, tone, and concern.</p>
+          <button className="btn-primary" onClick={() => navigate('/quiz')}>Take Skin Quiz</button>
+        </div>
+      </section>
 
-      <motion.section
-        className="section"
-        style={{paddingTop:0}}
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8 }}
-      >
+      {/* CATEGORIES */}
+      <section className="section fade-section" ref={el => sectionsRef.current[2] = el}>
         <div className="section-header">
           <h2 className="section-title">Shop by Category</h2>
         </div>
         <div className="category-grid">
-          {cats.map((c, index) => (
-            <motion.div
-              key={c.name}
-              className="cat-tile"
-              style={{background:c.bg,overflow:'hidden',position:'relative'}}
-              onClick={() => navigate('/catalogue')}
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{
-                scale: 1.05,
-                y: -5,
-                transition: { duration: 0.2 }
-              }}
-            >
-              <motion.img
-                src={c.img}
-                alt={c.name}
-                style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:0.55}}
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.3 }}
-              />
-              <span className="cat-tile-name" style={{position:'relative',zIndex:1,fontWeight:600}}>{c.name}</span>
-            </motion.div>
+          {cats.map(c => (
+            <div key={c.name} className="cat-tile" onClick={() => navigate('/catalogue')}>
+              <img src={c.img} alt={c.name}/>
+              <div className="cat-tile-overlay"/>
+              <span className="cat-tile-name">{c.name}</span>
+            </div>
           ))}
         </div>
-      </motion.section>
-
-      <motion.section
-        className="section"
-        style={{background: 'var(--coconut)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)'}}
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8 }}
-      >
-        <div className="section-header">
-          <motion.h2
-            className="section-title"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            What Our Customers Say
-          </motion.h2>
-        </div>
-        <CustomerReviewsCarousel />
-      </motion.section>
-
-      <Footer userId={userId} />
+      </section>
+      <Footer/>
     </div>
   )
 }
@@ -1061,10 +1013,10 @@ function ProductDetail({ onAddToCart }) {
             <div className="ingredients-text">{product.ingredients}</div>
           </div>
           <div className="detail-perks">
-            <span className="perk">Free delivery over £40</span>
+            <span className="perk">free delivery £40</span>
             <span className="perk">30-day returns</span>
-            <span className="perk">Cruelty-free</span>
-            <span className="perk">Dermatologist tested</span>
+            <span className="perk">cruelty free </span>
+            <span className="perk">dermatologist approved </span>
           </div>
         </div>
       </div>
@@ -1086,9 +1038,13 @@ function ProductDetail({ onAddToCart }) {
   )
 }
 
-function Cart({ cart, onRemove }) {
+function Cart({ cart, onRemove, setCart }) {
   const navigate = useNavigate()
   const location = useLocation()
+  const [discount, setDiscount] = useState('')
+  const [discountApplied, setDiscountApplied] = useState(false)
+  const [discountError, setDiscountError] = useState('')
+  const VALID_CODES = { 'FLASH20': 20, 'FORMULA10': 10, 'SKIN15': 15 }
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -1151,6 +1107,17 @@ function Cart({ cart, onRemove }) {
       <Footer/>
     </div>
   )
+
+  function applyDiscount() {
+    const code = discount.trim().toUpperCase()
+    if (VALID_CODES[code]) {
+      setDiscountApplied(code)
+      setDiscountError('')
+    } else {
+      setDiscountError('Invalid code. Try FLASH20, FORMULA10 or SKIN15.')
+      setDiscountApplied(false)
+    }
+  }
 }
 
 
@@ -1632,11 +1599,11 @@ function SkinQuiz({ userId }) {
   }
 
   const skinTypeInfo = {
-    oily:        { label: 'Oily Skin',         emoji: '✨', desc: 'Your skin produces excess sebum, leading to shine and enlarged pores. Focus on balancing and non-comedogenic formulas.' },
-    dry:         { label: 'Dry Skin',           emoji: '🌿', desc: 'Your skin lacks moisture and natural oils. Focus on rich hydration, barrier repair and gentle cleansing.' },
-    combination: { label: 'Combination Skin',   emoji: '⚖️', desc: 'You have an oily T-zone with drier cheeks. Balance is key — lightweight hydration and targeted treatments.' },
-    normal:      { label: 'Normal Skin',        emoji: '🌸', desc: 'Your skin is well-balanced. Focus on maintaining your barrier and preventing future concerns.' },
-    sensitive:   { label: 'Sensitive Skin',     emoji: '🤍', desc: 'Your skin reacts easily. Prioritise fragrance-free, gentle formulas that strengthen your skin barrier.' },
+    oily:        { label: 'Oily Skin',          desc: 'Your skin produces excess sebum, leading to shine and enlarged pores. Focus on balancing and non-comedogenic formulas.' },
+    dry:         { label: 'Dry Skin',           desc: 'Your skin lacks moisture and natural oils. Focus on rich hydration, barrier repair and gentle cleansing.' },
+    combination: { label: 'Combination Skin',   desc: 'You have an oily T-zone with drier cheeks. Balance is key — lightweight hydration and targeted treatments.' },
+    normal:      { label: 'Normal Skin',        desc: 'Your skin is well-balanced. Focus on maintaining your barrier and preventing future concerns.' },
+    sensitive:   { label: 'Sensitive Skin',     desc: 'Your skin reacts easily. Prioritise fragrance-free, gentle formulas that strengthen your skin barrier.' },
   }
 
   return (
@@ -1738,90 +1705,193 @@ function SkinQuiz({ userId }) {
 
 function About() {
   const navigate = useNavigate()
-  const location = useLocation()
-  
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [location])
-  
+ const values = [
+  {
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--peach)" strokeWidth="1.5"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>,
+    title:'Science First',
+    text:'Every formula is clinically tested and backed by dermatological research. We never compromise on ingredient quality.'
+  },
+  {
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--peach)" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+    title:'Clean Beauty',
+    text:'Cruelty-free, sustainably sourced ingredients. No harmful chemicals, no greenwashing — just honest formulation.'
+  },
+  {
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--peach)" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+    title:'For Everyone',
+    text:'Skincare without boundaries. Every product is designed to perform across all skin tones, types and concerns.'
+  },
+]
+  const team = [
+  { name:'Zaina Mahien',    role:'Frontend Developer',       initial:'Z' },
+  { name:'Hawa Hayat Ali',  role:'Project Planning',         initial:'H' },
+  { name:'Amina Rifa',      role:'Requirements Engineer',    initial:'A' },
+  { name:'Faiha Mubarak',   role:'Backend Developer',        initial:'F' },
+  { name:'Nurah',           role:'Database Administrator',   initial:'N' },
+]
   return (
     <div>
-      <section style={{background:'linear-gradient(135deg,#FDE8D8,#FCE7F3)',padding:'100px 48px',textAlign:'center'}}>
-        <p style={{fontSize:11,letterSpacing:'.2em',textTransform:'uppercase',color:'var(--peach)',marginBottom:16}}>Our Story</p>
-        <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:58,fontWeight:300,color:'var(--charcoal)',maxWidth:700,margin:'0 auto 24px',lineHeight:1.15}}>
-          Born from frustration.<br/><em style={{color:'var(--pink)'}}>Built for your skin.</em>
-        </h1>
-        <p style={{fontSize:15,color:'var(--muted)',maxWidth:540,margin:'0 auto',lineHeight:1.9}}>
-          Formula Me started with a simple problem — buying the wrong skincare product, again and again.
-        </p>
-      </section>
+      <div className="about-hero">
 
-      <section style={{maxWidth:760,margin:'0 auto',padding:'80px 48px'}}>
-        <div style={{display:'grid',gap:48}}>
-          <div>
-            <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:34,fontWeight:300,color:'var(--charcoal)',marginBottom:20}}>The Problem</h2>
-            <p style={{fontSize:15,color:'var(--muted)',lineHeight:2}}>
-              I love makeup. Always have. But my skin has never loved it back. For years I bought products that looked beautiful on screen, had thousands of positive reviews, and still managed to break me out, dry me out, or simply do nothing at all. The issue was never the products themselves — it was the mismatch. I was shopping without really knowing my skin.
-            </p>
-            <p style={{fontSize:15,color:'var(--muted)',lineHeight:2,marginTop:16}}>
-              Every wasted product was money gone and, more frustratingly, hope gone. I wanted glowing skin and instead I was cycling through half-used serums and foundations that sat on my shelf doing nothing. I knew there had to be a better way to shop for skincare — one that started with understanding your skin first, not after the damage was done.
-            </p>
-          </div>
+        
+        <div className="about-hero-overlay"/>
+        <div className="about-hero-content">
+          <p style={{fontSize:11,letterSpacing:'.22em',textTransform:'uppercase',color:'rgba(255,255,255,.7)',marginBottom:16}}>Our Story</p>
+         <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:58,fontWeight:300,color:'var(--white)',maxWidth:700,margin:'0 auto 24px',lineHeight:1.15}}>
+        Built for <em style={{color:'var(--pink)',fontStyle:'italic'}}>real</em> skin
+      </h1>
+      </div>
+      </div>
 
-          <div style={{height:1,background:'var(--border)'}}/>
+      <div className="about-section">
+        <div className="about-intro">
+          <h2 className="about-intro-title">We believe skincare should work for everyone</h2>
+          <p className="about-intro-text">
+            A simple belief that effective skincare should not be complicated, expensive, or exclusive. We combine clinical research with clean ingredients to create products that genuinely perform across every skin type, tone and concern.
+          </p>
+          <p className="about-intro-text" style={{marginTop:16}}>
+              Formula Me was built as a group computing project at University Of West London in 2026. What started as a brief became something that felt genuinely worth building. The platform was designed and developed by a team of five students.
+          </p>
+        </div>
 
-          <div>
-            <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:34,fontWeight:300,color:'var(--charcoal)',marginBottom:20}}>The Idea</h2>
-            <p style={{fontSize:15,color:'var(--muted)',lineHeight:2}}>
-              Formula Me was designed around one belief — makeup and skincare should work together, not against each other. Every product on this platform is selected because it pulls double duty: it enhances how you look while actively caring for your skin beneath the surface. No compromise.
-            </p>
-            <p style={{fontSize:15,color:'var(--muted)',lineHeight:2,marginTop:16}}>
-              The Skin Quiz at the heart of Formula Me is the feature I always wished existed. Answer four honest questions about your skin and receive a personalised set of recommendations that are actually matched to you — not to a marketing budget or a trending ingredient.
-            </p>
-          </div>
+        <div className="values-grid">
+          {values.map(v => (
+            <div key={v.title} className="value-card">
+            <div className="value-icon" style={{background:'var(--peach-light)'}}>{v.icon}</div>              <div className="value-title">{v.title}</div>
+              <div className="value-text">{v.text}</div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-          <div style={{height:1,background:'var(--border)'}}/>
+      <div style={{background:'var(--charcoal)',padding:'80px 56px',textAlign:'center'}}>
+        <p style={{fontSize:11,letterSpacing:'.22em',textTransform:'uppercase',color:'var(--peach)',marginBottom:16}}>By the numbers</p>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:40,maxWidth:800,margin:'0 auto',marginTop:32}}>
+          {[['20+','Products'],['5','Skin Types Served'],['100%','Cruelty Free'],['30','Day Returns']].map(([num,label]) => (
+            <div key={label}>
+              <div style={{fontFamily:'Cormorant Garamond,serif',fontSize:52,fontWeight:300,color:'#fff',lineHeight:1}}>{num}</div>
+              <div style={{fontSize:12,letterSpacing:'.1em',textTransform:'uppercase',color:'rgba(255,255,255,.5)',marginTop:8}}>{label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-          <div>
-            <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:34,fontWeight:300,color:'var(--charcoal)',marginBottom:20}}>The Project</h2>
-            <p style={{fontSize:15,color:'var(--muted)',lineHeight:2}}>
-              Formula Me was built as a group computing project at university of west london in 2026. What started as a brief became something that felt genuinely worth building. The platform was designed and developed by a team of five students — covering requirements, planning, design, backend infrastructure, and database architecture — working across four agile sprints.
-            </p>
-            <p style={{fontSize:15,color:'var(--muted)',lineHeight:2,marginTop:16}}>
-              The frontend was designed with the belief that a skincare platform should feel as considered as the products it sells. Clean, warm, and personal — not clinical. Every colour, font, and layout decision was made with that in mind.
-            </p>
-            <p style={{fontSize:15,color:'var(--muted)',lineHeight:2,marginTop:16}}>
-              This may be a university project today. But the problem it solves is real, the need is real, and the idea is one worth taking further. Formula Me is what happens when someone who genuinely struggled to find the right products decides to build the solution they always needed.
-            </p>
-          </div>
+      <div className="about-section">
+        <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:42,fontWeight:300,color:'var(--charcoal)',textAlign:'center',marginBottom:8}}>Meet the Team</h2>
+        <p style={{textAlign:'center',color:'var(--muted)',fontSize:14,marginBottom:0}}>The people behind every formula</p>
+        <div className="team-grid" style={{gridTemplateColumns:'repeat(5,1fr)'}}>
+        {team.map(t => (
+    <div key={t.name} className="team-card">
+      <div style={{
+        width:80, height:80, borderRadius:'50%',
+        background:'linear-gradient(135deg,var(--peach),var(--pink))',
+        display:'flex', alignItems:'center', justifyContent:'center',
+        margin:'0 auto 16px',
+        fontFamily:'Cormorant Garamond,serif',
+        fontSize:32, fontWeight:300, color:'#fff'
+      }}>
+        {t.initial}
+      </div>
+      <div className="team-name">{t.name}</div>
+      <div className="team-role">{t.role}</div>
+    </div>
+  ))}
+</div>
+</div>
 
-          <div style={{height:1,background:'var(--border)'}}/>
+      <div style={{background:'var(--peach-light)',padding:'80px 56px',textAlign:'center'}}>
+        <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:48,fontWeight:300,color:'var(--charcoal)',marginBottom:16}}>
+          Ready to find your formula?
+        </h2>
+        <p style={{color:'var(--muted)',fontSize:15,marginBottom:36}}>Take our skin quiz for personalised recommendations.</p>
+        <div style={{display:'flex',gap:12,justifyContent:'center'}}>
+          <button className="btn-primary" onClick={() => navigate('/quiz')}>Take Skin Quiz</button>
+          <button className="btn-outline" style={{color:'var(--charcoal)',borderColor:'var(--charcoal)'}} onClick={() => navigate('/catalogue')}>Shop All Products</button>
+        </div>
+      </div>
 
-          <div style={{background:'var(--peach-light)',borderRadius:16,padding:36,textAlign:'center'}}>
-            <h3 style={{fontFamily:'Cormorant Garamond,serif',fontSize:28,fontWeight:300,color:'var(--charcoal)',marginBottom:12}}>Meet the Team</h3>
-            <p style={{fontSize:14,color:'var(--muted)',lineHeight:1.9,marginBottom:8}}>
-              Formula Me was built by a team of five cyber secuity students as part of a group software development module.
-            </p>
-            <div style={{display:'flex',justifyContent:'center',gap:32,flexWrap:'wrap',marginTop:24}}>
-              {['Zaina Mahien · Frontend Design','Hawa Hayat Ali · Project Planning','Amina Rifa · Requirements','Faiha Mubarak · Backend','Nurah  ·  Database & Security'].map(m => (
-                <div key={m} style={{fontSize:12,color:'var(--charcoal)',fontWeight:500}}>{m}</div>
-              ))}
+      <Footer/>
+    </div>
+  )
+}
+
+// ── ORDER TRACKING ──
+function OrderTracking() {
+  const [orderInput, setOrderInput] = useState('')
+  const [tracked, setTracked] = useState(false)
+  const [orderNum, setOrderNum] = useState('')
+
+  function trackOrder() {
+    if (orderInput.trim().length > 3) {
+      setOrderNum(orderInput.trim().toUpperCase())
+      setTracked(true)
+    }
+  }
+
+  const steps = [
+    { title:'Order Placed',       desc:'Your order has been received and confirmed.',          time:'Today, 9:14 AM',    done:true },
+    { title:'Payment Confirmed',  desc:'Payment has been verified and processed.',             time:'Today, 9:15 AM',    done:true },
+    { title:'Being Prepared',     desc:'Your items are being carefully picked and packed.',    time:'Today, 11:30 AM',   done:true },
+    { title:'Dispatched',         desc:'Your order is on its way with our delivery partner.',  time:'Expected tomorrow', done:false, active:true },
+    { title:'Delivered',          desc:'Your order will arrive at your delivery address.',     time:'Est. 2-3 days',     done:false },
+  ]
+
+  return (
+    <div className="tracking-page">
+      <h1 className="tracking-title">Track Your Order</h1>
+      <p className="tracking-sub">Enter your order number to see real-time delivery updates. Your order number was included in your confirmation email.</p>
+
+      <div className="tracking-form">
+        <input
+          className="form-input"
+          placeholder="Enter order number e.g. FM123456"
+          value={orderInput}
+          onChange={e => setOrderInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && trackOrder()}
+          style={{flex:1}}/>
+        <button className="btn-primary" style={{borderRadius:8,whiteSpace:'nowrap'}} onClick={trackOrder}>Track Order</button>
+      </div>
+
+      {tracked && (
+        <>
+          <div className="tracking-order-card">
+            <div className="tracking-order-header">
+              <div>
+                <div style={{fontSize:11,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--muted)',marginBottom:6}}>Order Number</div>
+                <div className="tracking-order-id">{orderNum}</div>
+              </div>
+              <div className="tracking-status">In Transit</div>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:20,fontSize:13}}>
+              <div>
+                <div style={{color:'var(--muted)',marginBottom:4,fontSize:11,letterSpacing:'.06em',textTransform:'uppercase'}}>Estimated Delivery</div>
+                <div style={{color:'var(--charcoal)',fontWeight:500}}>2-3 Business Days</div>
+              </div>
+              <div>
+                <div style={{color:'var(--muted)',marginBottom:4,fontSize:11,letterSpacing:'.06em',textTransform:'uppercase'}}>Delivery Method</div>
+                <div style={{color:'var(--charcoal)',fontWeight:500}}>Standard Tracked</div>
+              </div>
+              <div>
+                <div style={{color:'var(--muted)',marginBottom:4,fontSize:11,letterSpacing:'.06em',textTransform:'uppercase'}}>Items</div>
+                <div style={{color:'var(--charcoal)',fontWeight:500}}>3 Products</div>
+              </div>
             </div>
           </div>
 
-        </div>
-      </section>
-
-      <section style={{background:'var(--charcoal)',padding:'80px 48px',textAlign:'center'}}>
-        <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:38,fontWeight:300,color:'var(--coconut)',marginBottom:16}}>Ready to find your formula?</h2>
-        <p style={{color:'#888',marginBottom:32,fontSize:14}}>Take the skin quiz and get products matched to your skin in under a minute.</p>
-        <div style={{display:'flex',gap:12,justifyContent:'center'}}>
-          <button className="btn-primary" onClick={() => navigate('/quiz')}>Take Skin Quiz</button>
-          <button style={{background:'transparent',color:'var(--coconut)',border:'1.5px solid #666',padding:'13px 32px',fontSize:13,letterSpacing:'.08em',textTransform:'uppercase',borderRadius:40,cursor:'pointer'}} onClick={() => navigate('/catalogue')}>Shop Now</button>
-        </div>
-      </section>
-
-      <Footer/>
+          <div className="tracking-steps">
+            {steps.map((s,i) => (
+              <div key={i} className={`tracking-step ${s.done?'done':''} ${s.active?'active':''}`}>
+                <div className="step-dot">{s.done ? '✓' : i+1}</div>
+                <div className="step-content">
+                  <div className="step-title">{s.title}</div>
+                  <div className="step-desc">{s.desc}</div>
+                  <div className="step-time">{s.time}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -3533,13 +3603,14 @@ export default function App() {
         <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />}/>
         <Route path="/quiz" element={<SkinQuiz userId={userId}/>}/>
         <Route path="/about" element={<About/>}/>
+        <Route path="/tracking" element={<OrderTracking/>}/>
         <Route path="/sustainability" element={<Sustainability/>}/>
         <Route path="/contact" element={<Contact/>}/>
         <Route path="/shipping" element={<Shipping/>}/>
         <Route path="/returns" element={<Returns/>}/>
         <Route path="/faq" element={<FAQ/>}/>
         <Route path="/login" element={<Login/>}/>
-        <Route path="/cart" element={<Cart cart={cart} onRemove={removeFromCart}/>}/>
+        <Route path="/cart" element={<Cart cart={cart} onRemove={removeFromCart} setCart={setCart}/>}/>
         <Route path="/checkout" element={<Checkout cart={cart} onClearCart={clearCart} userId={userId}/>}/>
         <Route path="/profile" element={<Profile userId={userId}/>}/>
       </Routes>
