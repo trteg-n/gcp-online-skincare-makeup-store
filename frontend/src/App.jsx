@@ -1868,15 +1868,12 @@ function About() {
   return (
     <div>
       <div className="about-hero">
-
-        
+        <img src="/images/people.jpg" alt="Formula Me"/>
         <div className="about-hero-overlay"/>
         <div className="about-hero-content">
           <p style={{fontSize:11,letterSpacing:'.22em',textTransform:'uppercase',color:'rgba(255,255,255,.7)',marginBottom:16}}>Our Story</p>
-         <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:58,fontWeight:300,color:'var(--white)',maxWidth:700,margin:'0 auto 24px',lineHeight:1.15}}>
-        Built for <em style={{color:'var(--pink)',fontStyle:'italic'}}>real</em> skin
-      </h1>
-      </div>
+          <h1 className="about-hero-title">Built for <em>real</em> skin</h1>
+        </div>
       </div>
 
       <div className="about-section">
