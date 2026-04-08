@@ -203,7 +203,7 @@ const copyCode = async () => {
       textAlign: 'center',
       background: '#F9FAFB'
     }}>
-      FLASH20
+      WELCOME10
     </div>
 
     <button
@@ -472,15 +472,23 @@ function Footer({ userId }) {
 
 function ProductCard({ product, onAddToCart }) {
   const navigate = useNavigate()
-  
+  const [hovered, setHovered] = useState(false)
+  const secondImg = product.images?.[1] || product.images?.[0]
+
   return (
-    <div className="product-card" onClick={() => navigate(`/product/${product.id}`)}>
-      <div className="card-img" style={{position:'relative',overflow:'hidden'}}>
+    <div className="product-card"
+      onClick={() => navigate(`/product/${product.id}`)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}>
+      <div className="card-img">
         {product.badge && <span className="card-badge">{product.badge}</span>}
-        <img src={product.images[0]} alt={product.name}
-          style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .3s ease'}}
-          onMouseEnter={e => e.target.style.transform='scale(1.1)'}
-          onMouseLeave={e => e.target.style.transform='scale(1)'}
+        <img
+          src={hovered ? secondImg : product.images?.[0]}
+          alt={product.name}
+          style={{
+            width:'100%', height:'100%', objectFit:'cover',
+            transition:'opacity .4s ease'
+          }}
           onError={e => { e.target.style.display='none' }}/>
       </div>
       <div className="card-body">
@@ -488,11 +496,13 @@ function ProductCard({ product, onAddToCart }) {
         <div className="card-name">{product.name}</div>
         <div className="card-footer">
           <span className="card-price">£{product.price}.00</span>
-          <button className="card-add" onClick={e => { e.stopPropagation(); onAddToCart(product) }} title="Add to cart">+</button>
+          <button className="card-add"
+            onClick={e => { e.stopPropagation(); onAddToCart(product) }}>+</button>
         </div>
       </div>
     </div>
-)}
+  )
+}
 
 const features = [
   {
@@ -607,7 +617,7 @@ function Home({ onAddToCart }) {
   }, [])
 
   function copyCode() {
-    navigator.clipboard.writeText('FLASH20')
+    navigator.clipboard.writeText('WELCOME10')
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -1037,7 +1047,7 @@ function Cart({ cart, onRemove, setCart }) {
   const [discount, setDiscount] = useState('')
   const [discountApplied, setDiscountApplied] = useState(false)
   const [discountError, setDiscountError] = useState('')
-  const VALID_CODES = { 'FLASH20': 20, 'FORMULA10': 10, 'SKIN15': 15 }
+  const VALID_CODES = { 'WELCOME10': 20, 'FORMULA10': 10, 'SKIN15': 15 }
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -1107,7 +1117,7 @@ function Cart({ cart, onRemove, setCart }) {
       setDiscountApplied(code)
       setDiscountError('')
     } else {
-      setDiscountError('Invalid code. Try FLASH20, FORMULA10 or SKIN15.')
+      setDiscountError('Invalid code. Try WELCOME10, FORMULA10 or SKIN15.')
       setDiscountApplied(false)
     }
   }
@@ -1122,11 +1132,13 @@ function Checkout({ cart, onClearCart, userId }) {
     window.scrollTo(0, 0)
   }, [location])
 
-  const [form, setForm] = useState({ name:'', email:'', address:'', city:'', postcode:'' })
+  const [form, setForm] = useState({ name:'', email:'', address:'', city:'', postcode:'', phone:'' })
   const [paymentMethod, setPaymentMethod] = useState(null) // 'cod' or 'card'
   const [cardExpanded, setCardExpanded] = useState(false)
   const [errors, setErrors] = useState({})
+  const [placedCart, setPlacedCart] = useState([])
   const [placed, setPlaced] = useState(false)
+  const [orderNumber, setOrderNumber] = useState('')
   const total = cart.reduce((sum, item) => sum + item.price, 0)
   const [loading, setLoading] = useState(false)
   const [couponCode, setCouponCode] = useState('')
@@ -1220,7 +1232,7 @@ function Checkout({ cart, onClearCart, userId }) {
         subtotal_total: subtotal,
         status: 'confirmed',
         address: `${form.address}, ${form.city}, ${form.postcode}`,
-        mobile_number: form.phone, // Set to true if cash on delivery, false otherwise
+        mobile_number: form.phone,
         created_at: new Date().toISOString()
       }).select().single()
 
@@ -1229,10 +1241,22 @@ function Checkout({ cart, onClearCart, userId }) {
       alert('Order failed: ' + orderError.message)
       return
     }
-    
 
-    setLoading(false)
+    // 2 — Save order items
+    const orderItems = cart.map(item => ({
+      orders_id: orderData.order_id,
+      product_id: item.id,
+      quantity: 1,
+      unit_price: item.price
+    }))
+    await db.from('order_items').insert(orderItems)
+
+    // Generate tracking number
+    const trackingNumber = `FM${orderData.order_id.toString().padStart(6, '0')}`
+    setOrderNumber(trackingNumber)
+    setPlacedCart([...cart])
     setPlaced(true)
+    setLoading(false)
     onClearCart()
   }
 
@@ -1248,22 +1272,81 @@ function Checkout({ cart, onClearCart, userId }) {
     )
   }
 
-  if (placed) return (
-    <div style={{minHeight:'80vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:16,padding:48,textAlign:'center'}}>
-      <div style={{width:64,height:64,borderRadius:'50%',background:'var(--peach-light)',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:8}}>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--peach)" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+ if (placed) return (
+  <div style={{minHeight:'80vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:16,padding:48,textAlign:'center'}}>
+    <div style={{width:64,height:64,borderRadius:'50%',background:'var(--peach-light)',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:8}}>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--peach)" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:48,fontWeight:300,color:'var(--charcoal)'}}>Order Confirmed</h2>
+    <p style={{color:'var(--muted)',fontSize:15,maxWidth:400,lineHeight:1.8}}>
+      Thank you, <strong>{form.name}</strong>. Your order has been placed successfully.
+    </p>
+    <p style={{color:'var(--muted)',fontSize:13}}>
+      A confirmation will be sent to <strong>{form.email}</strong>. Your order will arrive within 3-5 working days.
+    </p>
+
+    {/* TRACKING NUMBER BOX */}
+    <div style={{background:'linear-gradient(135deg, #FDE8D8, #FCE7F3)',border:'2px solid var(--peach)',borderRadius:16,padding:28,maxWidth:480,width:'100%',marginTop:20,textAlign:'center'}}>
+      <div style={{fontSize:11,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--muted)',marginBottom:12}}>Your Tracking Number</div>
+      <div style={{fontFamily:'monospace',fontSize:28,fontWeight:700,color:'var(--peach)',letterSpacing:'.15em',marginBottom:12}}>
+        {orderNumber}
       </div>
-      <h2 style={{fontFamily:'Cormorant Garamond,serif',fontSize:48,fontWeight:300,color:'var(--charcoal)'}}>Order Confirmed</h2>
-      <p style={{color:'var(--muted)',fontSize:15,maxWidth:400,lineHeight:1.8}}>
-        Thank you, {form.firstName}. Your order <strong>{orderNum}</strong> has been placed successfully.
-      </p>
-      <p style={{color:'var(--muted)',fontSize:13}}>A confirmation will be sent to {form.email}</p>
-      <div style={{display:'flex',gap:12,marginTop:20}}>
-        <button className="btn-primary" onClick={() => navigate('/tracking')}>Track Order</button>
-        <button className="btn-outline" style={{color:'var(--charcoal)',borderColor:'var(--charcoal)'}} onClick={() => navigate('/')}>Back to Home</button>
+      <p style={{fontSize:12,color:'var(--muted)',marginBottom:0}}>Use this number to track your order in real-time</p>
+    </div>
+
+    {/* ORDER SUMMARY BOX */}
+    <div style={{background:'var(--white)',border:'1px solid var(--border)',borderRadius:16,padding:32,maxWidth:480,width:'100%',marginTop:16,textAlign:'left'}}>
+      <div style={{fontSize:11,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--muted)',marginBottom:16}}>Order Summary</div>
+      {placedCart.map((item,i) => (
+        <div key={i} style={{display:'flex',justifyContent:'space-between',fontSize:13,color:'var(--charcoal)',marginBottom:10,paddingBottom:10,borderBottom:'1px solid var(--border)'}}>
+          <div style={{display:'flex',gap:12,alignItems:'center'}}>
+            <img src={item.images[0]} alt={item.name} style={{width:40,height:40,objectFit:'cover',borderRadius:6}} onError={e=>e.target.style.display='none'}/>
+            <div>
+              <div style={{fontWeight:500}}>{item.name}</div>
+              <div style={{fontSize:11,color:'var(--muted)'}}>Qty: {item.qty || 1}</div>
+            </div>
+          </div>
+          <div style={{color:'var(--peach)',fontWeight:600}}>£{item.price}.00</div>
+        </div>
+      ))}
+      {discount > 0 && (
+        <div style={{display:'flex',justifyContent:'space-between',fontSize:13,color:'#10B981',marginTop:8,paddingTop:8,borderTop:'1px solid var(--border)'}}>
+          <span>Discount Applied</span>
+          <span>-£{discount.toFixed(2)}</span>
+        </div>
+      )}
+      <div style={{display:'flex',justifyContent:'space-between',fontSize:13,color:'var(--muted)',marginTop:8}}>
+        <span>Delivery</span>
+        <span>{placedCart.reduce((a,i)=>a+i.price*(i.qty||1),0)>=40?'Free':'£5.99'}</span>
+      </div>
+      <div style={{display:'flex',justifyContent:'space-between',fontSize:16,fontWeight:600,color:'var(--charcoal)',marginTop:12,paddingTop:12,borderTop:'1px solid var(--border)'}}>
+        <span>Total</span>
+        <span>£{(() => {
+          const sub = placedCart.reduce((a,i)=>a+i.price*(i.qty||1),0)
+          const delivery = sub >= 40 ? 0 : 5.99
+          return (sub - discount + delivery).toFixed(2)
+        })()}</span>
       </div>
     </div>
-  )
+
+    {/* DELIVERY INFO */}
+    <div style={{background:'var(--coconut)',border:'1px solid var(--border)',borderRadius:12,padding:'20px 28px',maxWidth:480,width:'100%',textAlign:'left'}}>
+      <div style={{fontSize:11,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--muted)',marginBottom:12}}>Delivery Details</div>
+      <div style={{fontSize:13,color:'var(--charcoal)',lineHeight:2}}>
+        <div><strong>Name:</strong> {form.name}</div>
+        <div><strong>Address:</strong> {form.address}, {form.city}, {form.postcode}</div>
+        <div><strong>Phone:</strong> {form.phone}</div>
+        <div><strong>Payment:</strong> {paymentMethod === 'cod' ? 'Cash on Delivery' : 'Card Payment'}</div>
+        <div><strong>Estimated Delivery:</strong> 3-5 Business Days</div>
+      </div>
+    </div>
+
+    <div style={{display:'flex',gap:12,marginTop:24}}>
+      <button className="btn-primary" onClick={() => navigate(`/tracking?order=${orderNumber}`)}>Track Order</button>
+      <button className="btn-outline" style={{color:'var(--charcoal)',borderColor:'var(--charcoal)'}} onClick={() => navigate('/')}>Back to Home</button>
+    </div>
+  </div>
+)
 
   return (
     <div style={{minHeight:'80vh'}}>
@@ -3641,7 +3724,6 @@ export default function App() {
         <Route path="/cart" element={<Cart cart={cart} onRemove={removeFromCart} setCart={setCart}/>}/>
         <Route path="/checkout" element={<Checkout cart={cart} onClearCart={clearCart} userId={userId}/>}/>
         <Route path="/profile" element={<Profile userId={userId}/>}/>
-        <Route path="/tracking" element={<OrderTracking/>}/>
       </Routes>
       <NewsletterPopup
         isOpen={showNewsletter}
