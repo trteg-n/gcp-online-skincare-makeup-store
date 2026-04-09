@@ -1232,9 +1232,10 @@ function Checkout({ cart, onClearCart, userId }) {
         subtotal_total: subtotal,
         status: 'confirmed',
         address: `${form.address}, ${form.city}, ${form.postcode}`,
-        mobile_number: form.phone,
+        mobile_number: parseInt(form.phone.replace(/\D/g, '')) || 0, // Remove non-digits, convert to number
         created_at: new Date().toISOString()
-      }).select().single()
+      }).select()
+        .maybeSingle()
 
     if (orderError) {
       setLoading(false)
@@ -2292,12 +2293,23 @@ function Profile({ userId }) {
   useEffect(() => {
   if (!userId) { navigate('/login'); return }
   async function load() {
+    // Get auth user data for email
+    const { data: { user: authUser } } = await db.auth.getUser()
+
+    // Get additional user data from users table
     const { data: userData } = await db
-      .from('users').select('*').eq('user_id', userId).single()
+      .from('users')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle()
+
     if (userData) {
-      setUser(userData)
-      setEditForm({ full_name: userData.username || '', email: userData.email || '' })
-      setNewsletterEmail(userData.email || '')
+      setUser({
+        ...userData,
+        email: authUser?.email || userData.email // Prefer auth email
+      })
+      setEditForm({ full_name: userData.username || '', email: authUser?.email || userData.email || '' })
+      setNewsletterEmail(authUser?.email || userData.email || '')
     }
 
     const { data: orderData } = await db
@@ -2305,20 +2317,28 @@ function Profile({ userId }) {
     if (orderData) setOrders(orderData)
 
     const { data: skinData } = await db
-      .from('skin_profile').select('*').eq('user_id', userId).single()
+      .from('skin_profile')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle()
     if (skinData) setSkinProfile(skinData)
 
     // Load products from user's orders
-    const { data: orderItemsData } = await db
-      .from('order_items')
-      .select('product_id')
-      .in('orders_id', orderData?.map(o => o.order_id) || [])
+    const orderIds = orderData?.map(o => o.order_id).filter(Boolean) || []
+    let purchasedProducts = []
 
-    if (orderItemsData) {
-      const uniqueProductIds = [...new Set(orderItemsData.map(i => i.product_id))]
-      const purchasedProducts = PRODUCTS.filter(p => uniqueProductIds.includes(p.id))
-      setOrderedProducts(purchasedProducts)
+    if (orderIds.length > 0) {
+      const { data: orderItemsData } = await db
+        .from('order_items')
+        .select('product_id')
+        .in('orders_id', orderIds)
+
+      if (orderItemsData?.length) {
+        const uniqueProductIds = [...new Set(orderItemsData.map(i => i.product_id))]
+        purchasedProducts = PRODUCTS.filter(p => uniqueProductIds.includes(p.id))
+      }
     }
+    setOrderedProducts(purchasedProducts)
 
     setLoading(false)
   }
@@ -3572,11 +3592,21 @@ export default function App() {
     if (!userId) return
 
     try {
+      // Check if cart table exists by trying a lightweight query
+      const { error: tableCheckError } = await db
+        .from('cart')
+        .select('count', { count: 'exact', head: true })
+
+      if (tableCheckError) {
+        console.warn('Cart table not found, skipping cart load')
+        return
+      }
+
       const { data: cartData, error: cartError } = await db
         .from('cart')
         .select('cart_id')
         .eq('user_id', userId)
-        .single()
+        .maybeSingle()
 
       if (cartError || !cartData) return
 
@@ -3610,36 +3640,47 @@ export default function App() {
     setCart(c => [...c, product])
 
     if (userId) {
-      // Get or create cart for user
-      let { data: cartData } = await db
-        .from('cart').select('cart_id')
-        .eq('user_id', userId).single()
+      try {
+        // Get or create cart for user
+        let { data: cartData } = await db
+          .from('cart').select('cart_id')
+          .eq('user_id', userId)
+          .maybeSingle()
 
-      if (!cartData) {
-        const { data: newCart } = await db
-          .from('cart').insert({ user_id: userId })
-          .select().single()
-        cartData = newCart
-      }
+        if (!cartData) {
+          const { data: newCart, error: newCartError } = await db
+            .from('cart').insert({ user_id: userId })
+            .select()
+            .maybeSingle()
 
-      // Add to cart_item
-      const { data: existing } = await db
-        .from('cart_item')
-        .select('cart_item_id, quantity')
-        .eq('cart_id', cartData.cart_id)
-        .eq('product_id', product.id)
-        .single()
+          if (newCartError) {
+            console.error('Failed to create cart:', newCartError)
+            return
+          }
+          cartData = newCart
+        }
 
-      if (existing) {
-        await db.from('cart_item')
-          .update({ quantity: existing.quantity + 1 })
-          .eq('cart_item_id', existing.cart_item_id)
-      } else {
-        await db.from('cart_item').insert({
-          cart_id: cartData.cart_id,
-          product_id: product.id,
-          quantity: 1
-        })
+        // Add to cart_item
+        const { data: existing } = await db
+          .from('cart_item')
+          .select('cart_item_id, quantity')
+          .eq('cart_id', cartData.cart_id)
+          .eq('product_id', product.id)
+          .maybeSingle()
+
+        if (existing) {
+          await db.from('cart_item')
+            .update({ quantity: existing.quantity + 1 })
+            .eq('cart_item_id', existing.cart_item_id)
+        } else {
+          await db.from('cart_item').insert({
+            cart_id: cartData.cart_id,
+            product_id: product.id,
+            quantity: 1
+          })
+        }
+      } catch (err) {
+        console.error('Failed to add to cart:', err)
       }
     }
   }
@@ -3656,7 +3697,8 @@ export default function App() {
       try {
         const { data: cartData, error: cartError } = await db
           .from('cart').select('cart_id')
-          .eq('user_id', userId).single()
+          .eq('user_id', userId)
+          .maybeSingle()
 
         if (cartError || !cartData) return
 
@@ -3665,10 +3707,11 @@ export default function App() {
           .select('cart_item_id, quantity')
           .eq('cart_id', cartData.cart_id)
           .eq('product_id', productId)
-          .single()
+          .maybeSingle()
 
         if (existing && existing.quantity > 1) {
           await db.from('cart_item')
+            .update({ quantity: existing.quantity - 1 })
             .eq('cart_item_id', existing.cart_item_id)
         } else {
           await db.from('cart_item')
@@ -3689,7 +3732,7 @@ export default function App() {
       db.from('cart')
         .select('cart_id')
         .eq('user_id', userId)
-        .single()
+        .maybeSingle()
         .then(({ data: cartData }) => {
           if (cartData) {
             db.from('cart_item')
